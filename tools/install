@@ -1,0 +1,19 @@
+#!/bin/bash
+MYAPPS=$HOME/desktop/myapps
+DEST=${MYAPPS}/pass-1.0
+
+if [ -d "$DEST" ]
+then
+  rm -rf $DEST
+  echo 'Removed old installation.'
+fi
+
+if [ ! -d "$MYAPPS" ]
+then
+  mkdir  $MYAPPS
+fi
+
+echo $DEST
+cp ../target/pass-1.0.zip $MYAPPS
+cd $MYAPPS
+unzip pass-1.0.zip

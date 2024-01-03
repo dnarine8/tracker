@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#  **************** program arguments *****************
+LOGGING_CONFIG=logging.spatcli.properties
+MAIN_CLASS=com.cobra.pass.app.Main
+CLASSPATH="pass-1.0.jar"
+VMARGS='-Djava.util.logging.config.file='$LOGGING_CONFIG''
+
+# **************************** main function *******************************
+if [[ -z "${JAVA_HOME}" ]]; then
+  JAVA=java
+else
+  JAVA="${JAVA_HOME}\bin\java"
+fi
+
+"${JAVA}" ${VMARGS} -cp ${CLASSPATH} ${MAIN_CLASS}
+
+ 
