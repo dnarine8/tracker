@@ -3,7 +3,10 @@
  * and open the template in the editor.
  */
 
-package com.tracker;
+package com.cobra.tracker.app;
+
+import com.cobra.tracker.FileInfo;
+import com.cobra.tracker.ProcessInfo;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,7 +44,7 @@ import java.util.logging.Logger;
  */
 public class Main {
 
-    private static HashMap<String,FileInfo> table = null;
+    private static HashMap<String, FileInfo> table = null;
     /**
      * @param args the command line arguments
      */

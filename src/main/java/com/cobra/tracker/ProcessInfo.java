@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package com.tracker;
+package com.cobra.tracker;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
