@@ -17,7 +17,7 @@ import java.util.Arrays;
 /**
  * Goal 1 - Search through user account
  * Step 1 Start from root dir, get list of dir, for each file/dir
- * create an an instance of FileInfo, add the following
+ * create an  instance of FileInfo, add the following
  * - the file/name
  * - if file or dir
  * - hidden
@@ -59,10 +59,15 @@ public class FileInfo implements Serializable {
         isExecutable = f.canExecute();
         lastModifiedDate = f.lastModified();
         length = f.length();
-        hash = hashFile();
+        if (isDir) {
+            hash = new byte[]{0};
+        } else {
+            hash = hashFile();
+        }
+        status = FileStatus.unknown;
     }
 
-    public FileInfo(String filename, boolean isDir, boolean isHidden, boolean readOnly,
+  /*  public FileInfo(String filename, boolean isDir, boolean isHidden, boolean readOnly,
                     boolean readWrite, boolean isExecutable, long lastModifiedDate,
                     long length, byte[] hash) {
         this.filename = filename;
@@ -74,8 +79,11 @@ public class FileInfo implements Serializable {
         this.lastModifiedDate = lastModifiedDate;
         this.length = length;
         this.hash = hash;
-    }
+    }*/
 
+    public FileInfo(){
+        status = FileStatus.unknown;
+    }
     public FileInfo(File f) {
         filename = f.getPath();
         isDir = f.isDirectory();
@@ -90,8 +98,12 @@ public class FileInfo implements Serializable {
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append(filename);
-        buffer.append(',');
+        buffer.append(filename).append(',');
+        if (status == null){
+            buffer.append(FileStatus.unknown).append(',');
+        }else {
+            buffer.append(status).append(',');
+        }
         if (isDir) {
             buffer.append('D');
         } else {
