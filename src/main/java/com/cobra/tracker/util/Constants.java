@@ -6,7 +6,13 @@ public class Constants {
 
     public static final String AES = "AES";
     public static final String AES_GCM_NOPADDING = "AES/GCM/NoPadding";
-    public static final String SHA256 = "SHA256";
+    // Message Digest
+    public static final String MD_MD5 = "MD5";
+    public static final String MD_SHA1 = "SHA-1";
+    public static final String MD_SHA256 = "SHA-256";
+    public static final String MD_SHA384 = "SHA-384";
+    public static final String MD_SHA512 = "SHA-512";
+
 
     public static final int GCM_IV_LENGTH = 96;
     public static final int GCM_TAG_LENGTH = 128;
