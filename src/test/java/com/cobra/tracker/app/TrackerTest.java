@@ -12,9 +12,7 @@ public class TrackerTest {
     @Test
     public void diff() throws CobraException {
         String dbFilename = "db.bin";
-        String resourceName = "junk.txt";
         String testDir = "testdir";
-     //   Path resourceDirectory = Paths.get("src","test","resources");
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(classLoader.getResource(testDir).getFile());
         String absolutePath = file.getAbsolutePath();
@@ -24,7 +22,5 @@ public class TrackerTest {
         System.out.println(absolutePath);
         System.out.println(sourceDir);
         tracker.diff(sourceDir);
-        tracker.dump();
-
     }
 }

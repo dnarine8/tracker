@@ -188,6 +188,15 @@ public class FileInfo implements Serializable {
                 (FileStatus.nochange != status);
     }
 
+    public boolean equals(FileInfo newFile) {
+        if (this == newFile){
+            return true;
+        }
+        return  this.lastModifiedDate == newFile.lastModifiedDate &&
+                this.length == newFile.length &&
+                Arrays.equals(hash,newFile.hash);
+    }
+
     public void checkAndSetFileChange(FileInfo newFile) {
         if ((this.lastModifiedDate != newFile.lastModifiedDate ||
                 this.length != newFile.length || !Arrays.equals(hash,newFile.hash))) {

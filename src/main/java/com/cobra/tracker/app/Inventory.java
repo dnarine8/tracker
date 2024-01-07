@@ -4,15 +4,18 @@ import com.cobra.tracker.FileInfo;
 import com.cobra.tracker.util.CobraException;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
 public class Inventory {
     private HashMap<String, FileInfo> table = null;
+    private final String inventoryFilename;
 
-    public void readTable(String inventoryFilename) throws CobraException {
+    public Inventory(String inventoryFilename){
+        this.inventoryFilename = inventoryFilename;
+    }
+    public void readTable() throws CobraException {
         try {
             File file = new File(inventoryFilename);
 
@@ -31,55 +34,65 @@ public class Inventory {
         }
     }
 
-    public void processFile(String filename) throws CobraException {
-        FileInfo fileInfo = new FileInfo(filename);
+    public void diff(String sourceDirName) throws CobraException {
+        File source = new File(sourceDirName);
+        HashMap<String, FileInfo> oldTable = table;
+        table = new HashMap<>();
 
-        // 1 - Check to see if file exists
-        FileInfo fileInfoInInventory = table.get(fileInfo.key());
-        if (fileInfoInInventory != null){
-            // file exist, now update the status accordingly
-            fileInfoInInventory.checkAndSetFileChange(fileInfo);
-            table.put(fileInfo.key(),fileInfo);
-        }else {
-            // new file, just add to inventory
-            fileInfo.setNew();
-            table.put(fileInfo.key(), fileInfo);
+        processDir(source,oldTable);
+        System.out.println("Deleted entries: ");
+        dumpTable(oldTable);
+        writeTable();
+    }
+
+    private void processDir(File file, HashMap<String, FileInfo> oldTable) throws CobraException {
+        File [] contents = file.listFiles();
+        if (contents != null) {
+            for (int i = 0; i < contents.length; i++) {
+                processFile(contents[i].getAbsolutePath(),oldTable);
+                processDir(contents[i], oldTable);
+            }
         }
 
     }
 
+    public void processFile(String filename, HashMap<String, FileInfo> oldTable) throws CobraException {
+        FileInfo fileInfo = new FileInfo(filename);
+
+        // 1 - Remove file entry from old table if it exists
+        FileInfo fileInfoInInventory = oldTable.remove(fileInfo.key());
+        if (fileInfoInInventory != null){
+            // file exist, now update the status accordingly
+            if (fileInfoInInventory.equals(fileInfo)){
+                fileInfo.setNoChange();
+            }
+            else {
+                fileInfo.setModified();
+            }
+        } else {
+            // new file, just add to inventory
+            fileInfo.setNew();
+        }
+        table.put(fileInfo.key(), fileInfo);
+        System.out.println(fileInfo);
+    }
+
     public void dumpTable() {
-        Collection<FileInfo> values = table.values();
+        dumpTable(table);
+    }
+
+    public void dumpTable(HashMap<String, FileInfo> db) {
+        Collection<FileInfo> values = db.values();
         Iterator itr = values.iterator();
         while (itr.hasNext()) {
             System.out.println(itr.next());
         }
     }
 
-    public void removeDeleteEntries(){
-        Collection<FileInfo> values = table.values();
-        ArrayList<String> deleteList = new ArrayList<String>();
-        Iterator<FileInfo> itr = values.iterator();
-        System.out.println("removing deleted entries");
-        while (itr.hasNext()) {
-            FileInfo fi = itr.next();
-            if (fi.isDeleted()) {
-                System.out.println(fi);
-                deleteList.add(fi.key());
-            }
-        }
 
-        Iterator<String> itrDelete = deleteList.iterator();
-        while (itrDelete.hasNext()) {
-            table.remove(itrDelete.next());
-        }
-        System.out.println("removed deleted entries");
-
-    }
-
-    public void writeTable(String inventoryFileName) throws CobraException {
+    public void writeTable() throws CobraException {
         try {
-            File file = new File(inventoryFileName);
+            File file = new File(inventoryFilename);
             try (FileOutputStream f = new FileOutputStream(file);
                  ObjectOutputStream s = new ObjectOutputStream(f)) {
                 s.writeObject(table);

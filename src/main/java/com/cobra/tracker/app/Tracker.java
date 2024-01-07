@@ -12,38 +12,27 @@ import java.util.logging.Logger;
 
 public class Tracker {
 
-    private final String dbFilename;
-    private final Inventory inventory = new Inventory();
+    private final Inventory inventory;
 
     public Tracker(String dbFilename) throws CobraException {
-        this.dbFilename = dbFilename;
-        inventory.readTable(dbFilename);
-
+        this.inventory = new Inventory(dbFilename);
+        inventory.readTable();
 
     }
 
     public void diff(String sourceDirName) throws CobraException {
-        File source = new File(sourceDirName);
+        inventory.diff(sourceDirName);
+/*        File source = new File(sourceDirName);
 
           processDir(source);
           inventory.removeDeleteEntries();
           inventory.writeTable(dbFilename);
           System.out.println("Save to file: " + dbFilename);
-     //       ProcessInfo.getProcessInfo();
+     //       ProcessInfo.getProcessInfo();*/
 
     }
 
     public void dump(){
         inventory.dumpTable();
-    }
-    private void processDir(File file) throws CobraException {
-        File [] contents = file.listFiles();
-        if (contents != null) {
-            for (int i = 0; i < contents.length; i++) {
-                inventory.processFile(contents[i].getAbsolutePath());
-                processDir(contents[i]);
-            }
-        }
-
     }
 }
