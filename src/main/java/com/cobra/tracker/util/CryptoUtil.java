@@ -1,8 +1,7 @@
 
 package com.cobra.tracker.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -12,6 +11,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+
 /**
  *
  */
@@ -41,6 +41,36 @@ public class CryptoUtil {
         return hmac;
     }
 
+    public static byte[] hash(String hashAlgorithm, String filename, long length) throws CobraException {
+        if (length == 0){
+            return new byte[0];
+        }
+        try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(filename))) {
+            MessageDigest md = MessageDigest.getInstance(hashAlgorithm);
+
+            int bufferSize;
+            if (length > 4096) {
+                bufferSize = 4096;
+            } else {
+                bufferSize = (int) length;
+            }
+
+            byte[] buffer = new byte[bufferSize];
+            int bytesRead = 0;
+            while (bytesRead < length) {
+                int currentBytesRead = in.read(buffer);
+                if (currentBytesRead == -1){
+                    break;
+                }
+                bytesRead += currentBytesRead;
+                md.update(buffer, 0, currentBytesRead);
+            }
+            return md.digest();
+        } catch (IOException | NoSuchAlgorithmException e) {
+                throw new CobraException(String.format("Warning: Failed to calculate hash for %s. %s ", filename,e.getMessage()));
+        }
+    }
+
     public static byte[] hash(String hashAlgorithm, byte[] data) throws CobraException {
         try {
             MessageDigest md = MessageDigest.getInstance(hashAlgorithm);
@@ -56,7 +86,6 @@ public class CryptoUtil {
         InputStream inputStream = new ByteArrayInputStream(encodedCert);
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         return (X509Certificate) cf.generateCertificate(inputStream);
-
     }
 
     public static PrivateKey getECPrivateKey(String key) throws NoSuchAlgorithmException, InvalidKeySpecException {

@@ -1,4 +1,4 @@
-package com.cobra.tracker;
+package com.cobra.tracker.db;
 
 import com.cobra.tracker.util.CobraException;
 import com.cobra.tracker.util.Constants;
@@ -6,11 +6,7 @@ import com.cobra.tracker.util.CryptoUtil;
 import com.cobra.tracker.util.DataConverter;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 
 
@@ -30,7 +26,7 @@ import java.util.Arrays;
 /**
  * Represents a File or Directory.
  */
-public class FileInfo implements Serializable {
+public class FileInfo extends ForensicData {
     public enum FileStatus {unknown, created, modified, nochange, deleted};
     private String filename;
     private boolean isDir;
@@ -40,7 +36,7 @@ public class FileInfo implements Serializable {
     private boolean isExecutable;
     private long lastModifiedDate;
     private long length;
-    private byte[] hash;
+    private byte[] hash = new byte[]{0};
     private transient FileStatus status = FileStatus.unknown;
 
 
@@ -59,31 +55,12 @@ public class FileInfo implements Serializable {
         isExecutable = f.canExecute();
         lastModifiedDate = f.lastModified();
         length = f.length();
-        if (isDir) {
-            hash = new byte[]{0};
-        } else {
+        if (!isDir) {
             hash = hashFile();
         }
         status = FileStatus.unknown;
     }
 
-  /*  public FileInfo(String filename, boolean isDir, boolean isHidden, boolean readOnly,
-                    boolean readWrite, boolean isExecutable, long lastModifiedDate,
-                    long length, byte[] hash) {
-        this.filename = filename;
-        this.isDir = isDir;
-        this.isHidden = isHidden;
-        this.readOnly = readOnly;
-        this.readWrite = readWrite;
-        this.isExecutable = isExecutable;
-        this.lastModifiedDate = lastModifiedDate;
-        this.length = length;
-        this.hash = hash;
-    }*/
-
-    public FileInfo(){
-        status = FileStatus.unknown;
-    }
     public FileInfo(File f) {
         filename = f.getPath();
         isDir = f.isDirectory();
@@ -163,15 +140,7 @@ public class FileInfo implements Serializable {
     }
 
     public byte[] hashFile() throws CobraException {
-        try {
-            Path path = Paths.get(filename);
-
-            byte[] data = Files.readAllBytes(path);
-            byte[] fileHash = CryptoUtil.hash(Constants.MD_SHA256, data);
-            return fileHash;
-        } catch (IOException e) {
-            throw new CobraException(String.format("Failed to read file: %s.", filename));
-        }
+        return CryptoUtil.hash(Constants.MD_SHA256, filename, length);
     }
 
     public int hashCode() {

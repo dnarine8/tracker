@@ -1,14 +1,6 @@
 package com.cobra.tracker.app;
 
-import com.cobra.tracker.FileInfo;
-import com.cobra.tracker.ProcessInfo;
 import com.cobra.tracker.util.CobraException;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Tracker {
 
@@ -17,6 +9,11 @@ public class Tracker {
     public Tracker(String dbFilename) throws CobraException {
         this.inventory = new Inventory(dbFilename);
         inventory.readTable();
+
+    }
+
+    public void buildInventory(String filename){
+        Inventory currentInventory = new Inventory(filename);
 
     }
 
@@ -32,7 +29,7 @@ public class Tracker {
 
     }
 
-    public void dump(){
+    public void dump() throws CobraException {
         inventory.dumpTable();
     }
 }
