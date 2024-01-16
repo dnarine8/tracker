@@ -1,8 +1,6 @@
 package com.cobra.tracker.forensics;
 
-import com.cobra.tracker.db.FileInfo;
-import com.cobra.tracker.db.DataStoreFactory;
-import com.cobra.tracker.db.InventoryStore;
+import com.cobra.tracker.db.*;
 import com.cobra.tracker.util.CobraException;
 import com.cobra.tracker.util.LogUtil;
 
@@ -10,17 +8,18 @@ import java.io.*;
 import java.util.HashMap;
 
 public class FileSystemForensics implements Forensics {
-    private final HashMap<String, FileInfo> table = new HashMap<>();
+    private final HashMap<String, ForensicData> table = new HashMap<>();
+    private InventoryStore inventoryStore = null;
 
     @Override
-    public void buildInventory(String sourceDir) {
-        InventoryStore inventoryStore = null;
+    public String buildInventory(String sourceDir) {
         try {
             LogUtil.info("FileSystemForensics", String.format("Building inventory for %s.", sourceDir));
             inventoryStore = DataStoreFactory.createInventoryStore();
-            processDir(new File(sourceDir),inventoryStore);
-            inventoryStore.write(table);
+            processDir(new File(sourceDir));
+            inventoryStore.write();
             LogUtil.info("FileSystemForensics", String.format("Built inventory for %s.", sourceDir));
+            return inventoryStore.getInventoryDir();
 
         } finally {
             if (inventoryStore != null) {
@@ -30,27 +29,38 @@ public class FileSystemForensics implements Forensics {
     }
 
     @Override
-    public void diff(Forensics forensics) {
+    public void diff(String oldInventoryDir,String newInventoryDir) throws CobraException {
+        InventoryStore oldinventoryStore = DataStoreFactory.loadInventoryStore(oldInventoryDir);
+        oldinventoryStore.read();
+    //    oldinventoryStore.dumpTable();
 
+        InventoryStore newinventoryStore = DataStoreFactory.loadInventoryStore(newInventoryDir);
+        newinventoryStore.read();
+    //    newinventoryStore.dumpTable();
+
+        DiffResultsStore resultsStore = DataStoreFactory.createDiffResultsStore();
+        resultsStore.diff(oldinventoryStore,newinventoryStore);
     }
 
 
-    private void processDir(File file,InventoryStore inventoryStore ) {
+
+    private void processDir(File file ) {
         LogUtil.info(String.format("Processing directory %s.", file.getPath()));
         File[] contents = file.listFiles();
         if (contents != null) {
             for (int i = 0; i < contents.length; i++) {
-                processFile(contents[i].getAbsolutePath(),inventoryStore);
-                processDir(contents[i],inventoryStore);
+                processFile(contents[i].getAbsolutePath());
+                processDir(contents[i]);
             }
         }
     }
 
-    public void processFile(String filename,InventoryStore inventoryStore) {
+    public void processFile(String filename) {
         try {
             FileInfo fileInfo = new FileInfo(filename);
             fileInfo.setNew();
-            table.put(fileInfo.key(), fileInfo);
+            inventoryStore.add(fileInfo);
+//            table.put(fileInfo.key(), fileInfo);
         } catch (CobraException e) {
             try {
                 inventoryStore.writeError(String.format("Error: Failed to process %s. %s.", filename, e.getMessage()));

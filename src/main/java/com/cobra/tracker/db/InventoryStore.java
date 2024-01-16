@@ -4,6 +4,7 @@ import com.cobra.tracker.util.CobraException;
 import com.cobra.tracker.util.LogUtil;
 
 import java.io.*;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,6 +15,7 @@ public class InventoryStore extends StatusFileStore {
     private final String DATABASE = "db.bin";
     private final String dbName;
     private final String inventoryDir;
+    private HashMap<String, ForensicData> table = new HashMap<>();
 
     public InventoryStore(String inventoryDir) {
         super(inventoryDir);
@@ -22,7 +24,18 @@ public class InventoryStore extends StatusFileStore {
         LogUtil.info("Inventory", dbName);
     }
 
-    public Map<String, FileInfo> read() throws CobraException {
+    public void add(ForensicData forensicData){
+        table.put(forensicData.key(),forensicData);
+    }
+    public ForensicData remove(String key){
+        return table.remove(key);
+    }
+
+    public Collection<ForensicData> getAllData(){
+        return table.values();
+    }
+
+    public Map<String, ForensicData> read() throws CobraException {
         try {
             File file = new File(dbName);
             LogUtil.info(String.format("Loading inventory from %s.", dbName));
@@ -30,7 +43,7 @@ public class InventoryStore extends StatusFileStore {
             if (file.exists()) {
                 try (FileInputStream f = new FileInputStream(file);
                      ObjectInputStream s = new ObjectInputStream(f)) {
-                    Map<String, FileInfo> table = (HashMap<String, FileInfo>) s.readObject();
+                     table = (HashMap<String, ForensicData>) s.readObject();
                     LogUtil.info(String.format("Loaded inventory from %s.", dbName));
                     return table;
                 }
@@ -44,7 +57,7 @@ public class InventoryStore extends StatusFileStore {
         }
     }
 
-    public void write(Map<String, FileInfo> table) {
+    public void write() {
         try {
             File file = new File(dbName);
             try (FileOutputStream f = new FileOutputStream(file);
@@ -59,4 +72,16 @@ public class InventoryStore extends StatusFileStore {
     public String getInventoryDir() {
         return inventoryDir;
     }
+
+    public void dumpTable() throws CobraException {
+        dumpTable(table);
+    }
+
+    public void dumpTable(HashMap<String, ForensicData> db) throws CobraException {
+        Collection<ForensicData> values = db.values();
+        for (ForensicData fileInfo: values){
+            System.out.println(fileInfo);
+        }
+    }
+
 }

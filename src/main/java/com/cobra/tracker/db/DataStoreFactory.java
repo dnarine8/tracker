@@ -1,5 +1,7 @@
 package com.cobra.tracker.db;
 
+import com.cobra.tracker.util.CobraException;
+
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -16,6 +18,22 @@ public class DataStoreFactory {
         f.mkdirs();
         return new InventoryStore(inventoryDirName);
     }
+
+    public static InventoryStore loadInventoryStore(String inventoryDirName) throws CobraException {
+        if (inventoryDirName.lastIndexOf(File.separator) != inventoryDirName.length() - 1){
+            inventoryDirName = INVENTORY_BASE_DIR + inventoryDirName + File.separator;
+        }
+        else {
+            inventoryDirName = INVENTORY_BASE_DIR + inventoryDirName;
+        }
+
+        File f = new File(inventoryDirName);
+        if (!f.exists()){
+            throw new CobraException(String.format("Invalid inventory directory %s. Directory does not exist.",inventoryDirName));
+        }
+        return new InventoryStore(inventoryDirName);
+    }
+
 
     public static DiffResultsStore createDiffResultsStore() {
         String diffResultsDirName = RESULTS_BASE_DIR + getNewDirName() + File.separator;

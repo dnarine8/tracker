@@ -82,7 +82,7 @@ public class Main {
         
 
     private static void TrackDir(File file){
-        File [] contents = file.listFiles();
+  /*      File [] contents = file.listFiles();
         if (contents != null) {
           for (int i = 0; i < contents.length -1 ;i++) {
               FileInfo fi = new FileInfo(contents[i]);
@@ -101,7 +101,7 @@ public class Main {
               TrackDir(contents[i]);
 
           }
-        }
+        }*/
 
     }
     public static void writeTable() throws FileNotFoundException, IOException{

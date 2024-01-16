@@ -5,8 +5,9 @@ import com.cobra.tracker.util.CobraException;
 import com.cobra.tracker.util.LogUtil;
 
 import java.io.File;
+import java.util.Collection;
 
-public class DiffResultsStore extends StatusFileStore{
+public class DiffResultsStore extends StatusFileStore {
     private final String NEW_FILES = "new.txt";
     private final String MODIFIED_FILES = "modified.txt";
     private final String DELETED_FILES = "deleted.txt";
@@ -17,7 +18,7 @@ public class DiffResultsStore extends StatusFileStore{
     private final DataStore modifiedFiles;
     private final DataStore deletedFiles;
     private final DataStore unchangedFiles;
-    private final String diffResultsDir ;
+    private final String diffResultsDir;
 
     public DiffResultsStore(String outputDir) {
         super(outputDir);
@@ -37,24 +38,45 @@ public class DiffResultsStore extends StatusFileStore{
         LogUtil.info("Results", String.format("Filename with unchanged entries is %s.", unchangedFilesEntryFilename));
     }
 
+    public void diff(InventoryStore oldInventory, InventoryStore newInventory) throws CobraException {
+        for (ForensicData forensicData : oldInventory.getAllData()) {
+            ForensicData object = newInventory.remove(forensicData.key());
+            if (object == null) {
+                writeDeletedFiledEntry(forensicData);
+            } else {
+                if (object.equals(forensicData)) {
+                    writeUnchangedFiledEntry(forensicData);
+                } else {
+                    writeModifiedFileEntry(forensicData);
+                }
+            }
+        }
+        for (ForensicData forensicData : newInventory.getAllData()) {
+            writeNewFileEntry(forensicData);
+        }
+    }
+
     public String getDiffResultsDir() {
         return diffResultsDir;
     }
 
-    public void writeNewFileEntry(String errorMsg) throws CobraException {
-        newFiles.write(errorMsg);
-    }
-    public void writeModifiedFileEntry(String errorMsg) throws CobraException {
-        modifiedFiles.write(errorMsg);
-    }
-    public void writeDeletedFiledEntry(String errorMsg) throws CobraException {
-        deletedFiles.write(errorMsg);
-    }
-    public void writeUnchangedFiledEntry(String errorMsg) throws CobraException {
-        unchangedFiles.write(errorMsg);
+    public void writeNewFileEntry(ForensicData forensicData) throws CobraException {
+        newFiles.write(forensicData.toString());
     }
 
-    public void close(){
+    public void writeModifiedFileEntry(ForensicData forensicData) throws CobraException {
+        modifiedFiles.write(forensicData.toString());
+    }
+
+    public void writeDeletedFiledEntry(ForensicData forensicData) throws CobraException {
+        deletedFiles.write(forensicData.toString());
+    }
+
+    public void writeUnchangedFiledEntry(ForensicData forensicData) throws CobraException {
+        unchangedFiles.write(forensicData.toString());
+    }
+
+    public void close() {
         super.close();
         newFiles.close();
         modifiedFiles.close();
