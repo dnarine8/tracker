@@ -1,27 +1,34 @@
-package com.cobra.tracker.db;
+package com.cobra.tracker.db.repo;
 
-import com.cobra.tracker.app.DataStore;
 import com.cobra.tracker.util.CobraException;
 import com.cobra.tracker.util.LogUtil;
 
-import java.io.File;
-
+/**
+ * Based class for writing objects to storage. Implements storage for all errors encountered during the assessment.
+ */
 public class StatusFileStore {
+    /**
+     * Name of error file.
+     */
     private final String ERRORS = "errors.txt";
-    private final DataStore errorFile;
+
+    /**
+     * Writes the output.
+     */
+    private final DataStore dataStore;
 
     public StatusFileStore(String outputDir){
         String errorFileName = outputDir + ERRORS;
-        errorFile = new DataStore(errorFileName);
+        dataStore = new DataStore(errorFileName);
         LogUtil.info("Status", String.format("Error Filename is %s.", errorFileName));
     }
 
     public void writeError(String errorMsg) throws CobraException {
-        errorFile.write(errorMsg);
+        dataStore.write(errorMsg);
     }
 
     public void close(){
-        errorFile.close();
+        dataStore.close();
     }
 
 }

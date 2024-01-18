@@ -1,6 +1,7 @@
 package com.cobra.tracker.app;
 
-import com.cobra.tracker.db.FileInfo;
+import com.cobra.tracker.db.model.FileInfo;
+import com.cobra.tracker.db.repo.DataStore;
 import com.cobra.tracker.util.CobraException;
 
 import java.io.*;

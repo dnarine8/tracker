@@ -5,7 +5,7 @@
 
 package com.cobra.tracker.app;
 
-import com.cobra.tracker.db.FileInfo;
+import com.cobra.tracker.db.model.FileInfo;
 import com.cobra.tracker.ProcessInfo;
 
 import java.io.File;

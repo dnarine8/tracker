@@ -1,4 +1,4 @@
-package com.cobra.tracker.db;
+package com.cobra.tracker.db.model;
 
 import java.io.Serializable;
 

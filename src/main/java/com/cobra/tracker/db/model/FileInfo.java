@@ -1,4 +1,4 @@
-package com.cobra.tracker.db;
+package com.cobra.tracker.db.model;
 
 import com.cobra.tracker.util.CobraException;
 import com.cobra.tracker.util.Constants;

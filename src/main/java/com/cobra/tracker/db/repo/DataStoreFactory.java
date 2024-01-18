@@ -1,4 +1,4 @@
-package com.cobra.tracker.db;
+package com.cobra.tracker.db.repo;
 
 import com.cobra.tracker.util.CobraException;
 
@@ -8,9 +8,20 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class DataStoreFactory {
-    private static final String BASE_DIR = "data";
-    private static final String INVENTORY_BASE_DIR = BASE_DIR + File.separator + "inventory" + File.separator;
-    private static final String RESULTS_BASE_DIR = BASE_DIR + File.separator + "results" + File.separator;
+    private static String BASE_DIR = "data";
+    private static  String INVENTORY_BASE_DIR = BASE_DIR + File.separator + "inventory" + File.separator;
+    private static  String RESULTS_BASE_DIR = BASE_DIR + File.separator + "results" + File.separator;
+
+    /**
+     * Set the global base directory. Use for unit test cases.
+     * @param baseDir the base directory.
+     */
+    public static void setBaseDir(String baseDir){
+        BASE_DIR = baseDir;
+        INVENTORY_BASE_DIR = BASE_DIR + File.separator + "inventory" + File.separator;
+        RESULTS_BASE_DIR = BASE_DIR + File.separator + "results" + File.separator;
+    }
+
 
     public static InventoryStore createInventoryStore() {
         String inventoryDirName = INVENTORY_BASE_DIR + getNewDirName() + File.separator;
@@ -31,7 +42,10 @@ public class DataStoreFactory {
         if (!f.exists()){
             throw new CobraException(String.format("Invalid inventory directory %s. Directory does not exist.",inventoryDirName));
         }
-        return new InventoryStore(inventoryDirName);
+        InventoryStore inventoryStore = new InventoryStore(inventoryDirName);
+        inventoryStore.read();
+
+        return inventoryStore;
     }
 
 

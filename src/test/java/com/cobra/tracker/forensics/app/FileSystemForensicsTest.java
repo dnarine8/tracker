@@ -21,10 +21,10 @@ public class FileSystemForensicsTest {
         String sourceDir = "C:\\Users\\dev\\Desktop\\repo\\cobra";
 
         FileSystemForensics forensics = new FileSystemForensics();
-        String inventoryDir = forensics.buildInventory(sourceDir);
+        String inventoryDir = forensics.buildInventory(sourceDir).getInventoryDirName();
 
         FileSystemForensics forensics2 = new FileSystemForensics();
-        String inventoryDir2 = forensics2.buildInventory(sourceDir);
+        String inventoryDir2 = forensics2.buildInventory(sourceDir).getInventoryDirName();
 
         FileSystemForensics analyze = new FileSystemForensics();
         analyze.diff(extractDirName(inventoryDir),extractDirName(inventoryDir2));

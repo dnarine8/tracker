@@ -1,11 +1,9 @@
-package com.cobra.tracker.db;
+package com.cobra.tracker.db.repo;
 
-import com.cobra.tracker.app.DataStore;
+import com.cobra.tracker.db.model.ForensicData;
+import com.cobra.tracker.forensics.DiffSummary;
 import com.cobra.tracker.util.CobraException;
 import com.cobra.tracker.util.LogUtil;
-
-import java.io.File;
-import java.util.Collection;
 
 public class DiffResultsStore extends StatusFileStore {
     private final String NEW_FILES = "new.txt";
@@ -38,21 +36,31 @@ public class DiffResultsStore extends StatusFileStore {
         LogUtil.info("Results", String.format("Filename with unchanged entries is %s.", unchangedFilesEntryFilename));
     }
 
-    public void diff(InventoryStore oldInventory, InventoryStore newInventory) throws CobraException {
-        for (ForensicData forensicData : oldInventory.getAllData()) {
-            ForensicData object = newInventory.remove(forensicData.key());
-            if (object == null) {
-                writeDeletedFiledEntry(forensicData);
-            } else {
-                if (object.equals(forensicData)) {
-                    writeUnchangedFiledEntry(forensicData);
+    public DiffSummary diff(InventoryStore oldInventory, InventoryStore newInventory) throws CobraException {
+        try {
+            DiffSummary diffSummary = new DiffSummary();
+            for (ForensicData forensicData : newInventory.getAllData()) {
+                ForensicData object = oldInventory.remove(forensicData.key());
+                if (object == null) {
+                    writeDeletedFiledEntry(forensicData);
+                    diffSummary.incrementDeletedItems();
                 } else {
-                    writeModifiedFileEntry(forensicData);
+                    if (object.equals(forensicData)) {
+                        writeUnchangedFiledEntry(forensicData);
+                        diffSummary.incrementUnchangedItems();
+                    } else {
+                        writeModifiedFileEntry(forensicData);
+                        diffSummary.incrementChangedItems();
+                    }
                 }
             }
-        }
-        for (ForensicData forensicData : newInventory.getAllData()) {
-            writeNewFileEntry(forensicData);
+            for (ForensicData forensicData : newInventory.getAllData()) {
+                writeNewFileEntry(forensicData);
+                diffSummary.incrementNewItems();
+            }
+            return diffSummary;
+        } finally {
+            close();
         }
     }
 
@@ -62,18 +70,25 @@ public class DiffResultsStore extends StatusFileStore {
 
     public void writeNewFileEntry(ForensicData forensicData) throws CobraException {
         newFiles.write(forensicData.toString());
+        System.out.println("new entry: " + forensicData.toString());
     }
 
     public void writeModifiedFileEntry(ForensicData forensicData) throws CobraException {
         modifiedFiles.write(forensicData.toString());
+        System.out.println("modified entry: " + forensicData.toString());
+
     }
 
     public void writeDeletedFiledEntry(ForensicData forensicData) throws CobraException {
         deletedFiles.write(forensicData.toString());
+        System.out.println("deleted entry: " + forensicData.toString());
+
     }
 
     public void writeUnchangedFiledEntry(ForensicData forensicData) throws CobraException {
         unchangedFiles.write(forensicData.toString());
+        System.out.println("unchanged entry: " + forensicData.toString());
+
     }
 
     public void close() {

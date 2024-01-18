@@ -1,18 +1,19 @@
-package com.cobra.tracker.db;
+package com.cobra.tracker.db.repo;
 
+import com.cobra.tracker.db.model.ForensicData;
 import com.cobra.tracker.util.CobraException;
 import com.cobra.tracker.util.LogUtil;
 
 import java.io.*;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
 
 /**
  * Stores data for an inventory.
  */
 public class InventoryStore extends StatusFileStore {
-    private final String DATABASE = "db.bin";
+    private final String DATABASE = "files.bin";
     private final String dbName;
     private final String inventoryDir;
     private HashMap<String, ForensicData> table = new HashMap<>();
@@ -21,31 +22,46 @@ public class InventoryStore extends StatusFileStore {
         super(inventoryDir);
         this.inventoryDir = inventoryDir;
         dbName = inventoryDir + DATABASE;
-        LogUtil.info("Inventory", dbName);
+        LogUtil.info("Inventory", String.format("Inventory database name is %s.", dbName));
     }
 
-    public void add(ForensicData forensicData){
-        table.put(forensicData.key(),forensicData);
+    public void add(ForensicData forensicData) {
+        table.put(forensicData.key(), forensicData);
     }
-    public ForensicData remove(String key){
+
+    public ForensicData remove(String key) {
         return table.remove(key);
     }
 
-    public Collection<ForensicData> getAllData(){
+    public Collection<ForensicData> getAllData() {
         return table.values();
     }
 
-    public Map<String, ForensicData> read() throws CobraException {
+    public Set<String> getKeys(){
+        return table.keySet();
+    }
+
+    /**
+     * Loads the inventory from file.
+     * @return the inventory
+     * @throws CobraException in case of errors
+     */
+    public void read() throws CobraException {
         try {
             File file = new File(dbName);
             LogUtil.info(String.format("Loading inventory from %s.", dbName));
 
             if (file.exists()) {
-                try (FileInputStream f = new FileInputStream(file);
-                     ObjectInputStream s = new ObjectInputStream(f)) {
-                     table = (HashMap<String, ForensicData>) s.readObject();
-                    LogUtil.info(String.format("Loaded inventory from %s.", dbName));
-                    return table;
+                try (FileInputStream fileInputStream = new FileInputStream(file);
+                     ObjectInputStream  output = new ObjectInputStream(fileInputStream)) {
+                    Object obj = output.readObject();
+                    if (obj instanceof HashMap) {
+                        table = (HashMap<String, ForensicData>) obj;
+                        LogUtil.info(String.format("Loaded inventory from %s.", dbName));
+                    } else {
+                        LogUtil.warn(String.format("Failed to load inventory from %s.", dbName));
+                        throw new CobraException(String.format("Failed to load inventory from %s.", dbName));
+                    }
                 }
             } else {
                 LogUtil.warn(String.format("Failed to load inventory. %s does not exist.", dbName));
@@ -77,9 +93,9 @@ public class InventoryStore extends StatusFileStore {
         dumpTable(table);
     }
 
-    public void dumpTable(HashMap<String, ForensicData> db) throws CobraException {
+    public void dumpTable(HashMap<String, ForensicData> db){
         Collection<ForensicData> values = db.values();
-        for (ForensicData fileInfo: values){
+        for (ForensicData fileInfo : values) {
             System.out.println(fileInfo);
         }
     }
