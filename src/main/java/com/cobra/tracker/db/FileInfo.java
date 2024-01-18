@@ -10,23 +10,10 @@ import java.util.Arrays;
 
 
 /**
- * Goal 1 - Search through user account
- * Step 1 Start from root dir, get list of dir, for each file/dir
- * create an  instance of FileInfo, add the following
- * - the file/name
- * - if file or dir
- * - hidden
- * - read only, write, executable
- * - last date/time modified
- * if directory, call step 1
- */
-
-
-/**
  * Represents a File or Directory.
  */
 public class FileInfo extends ForensicData {
-    private String filename;
+    private String path;
     private boolean isDir;
     private boolean isHidden;
     private boolean readOnly;
@@ -39,14 +26,14 @@ public class FileInfo extends ForensicData {
     /**
      * Build the inventory for the given file.
      *
-     * @param filename the filepath
+     * @param path the filepath
      */
-    public FileInfo(String filename) throws CobraException {
-        this(new File(filename));
+    public FileInfo(String path) throws CobraException {
+        this(new File(path));
     }
 
     public FileInfo(File f) throws CobraException {
-        filename = f.getPath();
+        path = f.getPath();
         isDir = f.isDirectory();
         isHidden = f.isHidden();
         readOnly = f.canRead() && !f.canWrite();
@@ -55,7 +42,7 @@ public class FileInfo extends ForensicData {
         lastModifiedDate = f.lastModified();
         length = f.length();
         if (!isDir) {
-            hash = hashFile();
+            hash = CryptoUtil.hash(Constants.MD_SHA256, path, length);
         }
     }
 
@@ -63,7 +50,7 @@ public class FileInfo extends ForensicData {
     @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append(filename).append(',');
+        buffer.append(path).append(',');
         buffer.append(super.toString());
         buffer.append(',');
         if (isDir) {
@@ -94,40 +81,31 @@ public class FileInfo extends ForensicData {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object obj) {
         boolean isEqual = false;
-        if (o != null) {
-            if (o instanceof FileInfo) {
-                FileInfo f = (FileInfo) o;
-                if (f.filename.equals(this.filename)) {
-                    isEqual = this.lastModifiedDate == f.lastModifiedDate &&
-                            this.length == f.length && Arrays.equals(hash, f.hash);
-                }
+        if (obj != null) {
+            if (obj instanceof FileInfo) {
+                FileInfo fileInfo = (FileInfo) obj;
+                isEqual = fileInfo.path.equals(this.path) &&
+                        Arrays.equals(hash, fileInfo.hash) &&
+                        this.lastModifiedDate == fileInfo.lastModifiedDate &&
+                        this.length == fileInfo.length;
             }
         }
         return isEqual;
     }
 
-    private byte[] hashFile() throws CobraException {
-        return CryptoUtil.hash(Constants.MD_SHA256, filename, length);
-    }
 
     public int hashCode() {
-        return this.filename.hashCode();
+        return path.hashCode();
     }
 
+    /**
+     * The full path uniquely identifies a file/dir.
+     * @return the filename
+     */
     public String key() {
-        return this.filename;
-    }
-
-    public void checkAndSetFileChange(FileInfo newFile) {
-/*        if ((this.lastModifiedDate != newFile.lastModifiedDate ||
-                this.length != newFile.length || !Arrays.equals(hash,newFile.hash))) {
-            status = FileStatus.modified;
-            System.out.println("Change: " + this.toString());
-        } else {
-            status = FileStatus.nochange;
-        }*/
+        return this.path;
     }
 
 }
