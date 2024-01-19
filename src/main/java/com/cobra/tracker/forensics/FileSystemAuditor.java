@@ -11,9 +11,30 @@ import com.cobra.tracker.util.LogUtil;
 import java.io.*;
 import java.util.HashMap;
 
-public class FileSystemForensics implements Forensics {
+public class FileSystemAuditor extends GenericAuditor {
     private final HashMap<String, ForensicData> table = new HashMap<>();
     private InventoryStore inventoryStore = null;
+    private static final String TYPE = "FILES";
+
+    @Override
+    public InventorySummary buildInventory(InventoryStore inventoryStore) throws CobraException{
+        try {
+            LogUtil.info("FileSystemForensics", String.format("Building inventory for %s.", sourceDir));
+            inventoryStore = DataStoreFactory.createInventoryStore();
+            processDir(new File(sourceDir));
+            inventoryStore.write();
+            LogUtil.info("FileSystemForensics", String.format("Built inventory for %s.", sourceDir));
+            InventorySummary summary = new InventorySummary();
+            summary.setInventoryDirName(inventoryStore.getInventoryDir());
+            summary.setKeys(inventoryStore.getKeys());
+            return  summary;
+        } finally {
+            if (inventoryStore != null) {
+                inventoryStore.close();
+            }
+        }
+
+    }
 
     @Override
     public InventorySummary buildInventory(String sourceDir) {
@@ -32,6 +53,10 @@ public class FileSystemForensics implements Forensics {
                 inventoryStore.close();
             }
         }
+    }
+
+    public String getType(){
+        return TYPE;
     }
 
     @Override

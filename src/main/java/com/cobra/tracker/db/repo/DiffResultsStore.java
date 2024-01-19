@@ -39,8 +39,8 @@ public class DiffResultsStore extends StatusFileStore {
     public DiffSummary diff(InventoryStore oldInventory, InventoryStore newInventory) throws CobraException {
         try {
             DiffSummary diffSummary = new DiffSummary();
-            for (ForensicData forensicData : newInventory.getAllData()) {
-                ForensicData object = oldInventory.remove(forensicData.key());
+            for (ForensicData forensicData : oldInventory.getAllData()) {
+                ForensicData object = newInventory.remove(forensicData.key());
                 if (object == null) {
                     writeDeletedFiledEntry(forensicData);
                     diffSummary.incrementDeletedItems();

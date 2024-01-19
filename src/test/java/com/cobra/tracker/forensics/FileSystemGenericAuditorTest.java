@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
-public class FileSystemForensicsTest extends BaseTest {
+public class FileSystemGenericAuditorTest extends BaseTest {
 
     @Test
     public void createInventory() throws FileNotFoundException {
@@ -29,7 +29,7 @@ public class FileSystemForensicsTest extends BaseTest {
         createFile(newDir + File.separator + "file1.txt", "this is a test");
         createFile(newDir + File.separator + "file2.txt", "this is a test test");
 
-        FileSystemForensics forensics = new FileSystemForensics();
+        FileSystemAuditor forensics = new FileSystemAuditor();
         InventorySummary summary = forensics.buildInventory(sourceDir);
         String inventoryDir = summary.getInventoryDirName();
 
@@ -58,7 +58,7 @@ public class FileSystemForensicsTest extends BaseTest {
         createFile(newDir + File.separator + "file2.txt", "this is a test test");
 
         // create first inventory
-        FileSystemForensics forensics = new FileSystemForensics();
+        FileSystemAuditor forensics = new FileSystemAuditor();
         String inventory1Dir = forensics.buildInventory(sourceDir).getInventoryDirName();
 
         Thread.sleep(2000);
@@ -73,13 +73,13 @@ public class FileSystemForensicsTest extends BaseTest {
         (new File(newDir + File.separator + "file1.txt")).delete();
 
         // create second inventory
-        FileSystemForensics forensics2 = new FileSystemForensics();
+        FileSystemAuditor forensics2 = new FileSystemAuditor();
         String inventory2Dir = forensics2.buildInventory(sourceDir).getInventoryDirName();
 
 
         System.out.println("Diffing " + inventory1Dir + " and " + inventory2Dir);
 
-        FileSystemForensics analyze = new FileSystemForensics();
+        FileSystemAuditor analyze = new FileSystemAuditor();
         DiffSummary diffSummary = analyze.diff(extractDirName(inventory1Dir),extractDirName(inventory2Dir));
 
         System.out.println(diffSummary.getChangeItems());

@@ -1,18 +1,18 @@
 package com.cobra.tracker.forensics.app;
 
-import com.cobra.tracker.forensics.FileSystemForensics;
+import com.cobra.tracker.forensics.FileSystemAuditor;
 import com.cobra.tracker.util.CobraException;
 import org.junit.Test;
 
 import java.io.File;
 
 
-public class FileSystemForensicsTest {
+public class FileSystemGenericAuditorTest {
 
     @Test
     public void createInventory()  {
         String sourceDir = "C:\\Users\\dev\\Desktop\\repo\\cobra";
-        FileSystemForensics forensics = new FileSystemForensics();
+        FileSystemAuditor forensics = new FileSystemAuditor();
         forensics.buildInventory(sourceDir);
     }
 
@@ -20,13 +20,13 @@ public class FileSystemForensicsTest {
     public void diff() throws CobraException {
         String sourceDir = "C:\\Users\\dev\\Desktop\\repo\\cobra";
 
-        FileSystemForensics forensics = new FileSystemForensics();
+        FileSystemAuditor forensics = new FileSystemAuditor();
         String inventoryDir = forensics.buildInventory(sourceDir).getInventoryDirName();
 
-        FileSystemForensics forensics2 = new FileSystemForensics();
+        FileSystemAuditor forensics2 = new FileSystemAuditor();
         String inventoryDir2 = forensics2.buildInventory(sourceDir).getInventoryDirName();
 
-        FileSystemForensics analyze = new FileSystemForensics();
+        FileSystemAuditor analyze = new FileSystemAuditor();
         analyze.diff(extractDirName(inventoryDir),extractDirName(inventoryDir2));
     }
     private String extractDirName(String inventoryDir){
