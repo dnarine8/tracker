@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 public class ForensicsTest extends BaseTest {
 
     private String sourceDir;
-
+    private String newDir;
     @Before
     public void setup() throws FileNotFoundException, CobraException {
         sourceDir = createSourceDir("source");
@@ -28,7 +28,7 @@ public class ForensicsTest extends BaseTest {
         createFile(sourceDir + File.separator + "file2.txt", "this is a test test");
 
         // add new dir with file1.txt and file2.txt
-        String newDir = sourceDir + File.separator + "dir1";
+        newDir = sourceDir + File.separator + "dir1";
         (new File(newDir)).mkdir();
         createFile(newDir + File.separator + "dir1file1.txt", "this is a test");
         createFile(newDir + File.separator + "dir1file2.txt", "this is a test test");
@@ -59,7 +59,60 @@ public class ForensicsTest extends BaseTest {
 
 
     @Test
-    public void diff() {
+    public void diff() throws FileNotFoundException, CobraException {
+        Forensics forensics = new Forensics();
+        InventorySummary [] result = forensics.buildInventory(sourceDir);
+        InventorySummary summary = result[0];
+        String inventory1Dir = summary.getTimeStamp();
+
+        // change file2
+        createFile(sourceDir + File.separator + "file2.txt", "this is a test");
+
+        // add new file to dir1
+        createFile(newDir + File.separator + "dir1file3.txt", "this is a test test");
+
+        // delete file1 from dir1
+        (new File(newDir + File.separator + "dir1file1.txt")).delete();
+
+        Forensics forensics2 = new Forensics();
+        result = forensics2.buildInventory(sourceDir);
+        summary = result[0];
+        String inventory2Dir = summary.getTimeStamp();
+
+        Forensics forensics3 = new Forensics();
+        DiffSummary []diffSummaries = forensics.diff(inventory1Dir,inventory2Dir);
+        System.out.println("old inventory dir is " + inventory1Dir);
+        System.out.println("new inventory dir is " + inventory2Dir);
+
+        System.out.println(diffSummaries[0]);
+
+    }
+
+/*    public void diff() throws CobraException {
+        String sourceDir = "C:\\Users\\dev\\Desktop\\repo\\cobra";
+
+        FileSystemAuditor forensics = new FileSystemAuditor();
+        String inventoryDir = forensics.buildInventory(sourceDir).getInventoryDirName();
+
+        FileSystemAuditor forensics2 = new FileSystemAuditor();
+        String inventoryDir2 = forensics2.buildInventory(sourceDir).getInventoryDirName();
+
+        FileSystemAuditor analyze = new FileSystemAuditor();
+        analyze.diff(extractDirName(inventoryDir),extractDirName(inventoryDir2));
+    }*/
+    private String extractDirName(String inventoryDir){
+        int index = inventoryDir.indexOf("inventory");
+        int startIndex;
+        int endIndex;
+        if (index == inventoryDir.length() - 1){
+            endIndex = index;
+            startIndex = inventoryDir.lastIndexOf(File.separator, endIndex - 1);
+        } else {
+            startIndex = index;
+            endIndex = inventoryDir.length() - 1;
+        }
+        return inventoryDir.substring(++startIndex,endIndex);
+
     }
 
     private void createFile(String name, String data) throws FileNotFoundException {

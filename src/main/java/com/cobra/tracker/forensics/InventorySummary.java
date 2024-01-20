@@ -3,8 +3,10 @@ package com.cobra.tracker.forensics;
 import java.util.Set;
 
 public class InventorySummary {
+
     private String inventoryDirName;
     private Set<String> keys;
+    private String timeStamp;
 
     public String getInventoryDirName() {
         return inventoryDirName;
@@ -21,4 +23,13 @@ public class InventorySummary {
     public void setKeys(Set<String> keys) {
         this.keys = keys;
     }
+
+    public String getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(String timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
 }

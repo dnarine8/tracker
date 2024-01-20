@@ -38,4 +38,8 @@ public class DiffSummary {
     public int getUnchangeItems() {
         return unchangeItems;
     }
+
+    public  String toString(){
+        return String.format("New items=%d, Changed items=%d, Deleted items=%d, Unchanged items=%d",newItems,changeItems,deletedItems,unchangeItems);
+    }
 }

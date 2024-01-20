@@ -13,38 +13,13 @@ import java.util.HashMap;
 
 public class FileSystemAuditor extends GenericAuditor {
     private final HashMap<String, ForensicData> table = new HashMap<>();
-    private InventoryStore inventoryStore = null;
     private static final String TYPE = "FILES";
 
     @Override
     public InventorySummary buildInventory(InventoryStore inventoryStore, String sourceDir){
         try {
-            LogUtil.info("FileSystemForensics", String.format("Building inventory for %s.", sourceDir));
-            this.inventoryStore = inventoryStore;
-//            inventoryStore = DataStoreFactory.createInventoryStore();
-            processDir(new File(sourceDir));
+            processDir(inventoryStore,new File(sourceDir));
             inventoryStore.write();
-            LogUtil.info("FileSystemForensics", String.format("Built inventory for %s.", sourceDir));
-            InventorySummary summary = new InventorySummary();
-            summary.setInventoryDirName(inventoryStore.getInventoryDir());
-            summary.setKeys(inventoryStore.getKeys());
-            return  summary;
-        } finally {
-            if (inventoryStore != null) {
-                inventoryStore.close();
-            }
-        }
-
-    }
-
-    @Override
-    public InventorySummary buildInventory(String sourceDir) {
-        try {
-            LogUtil.info("FileSystemForensics", String.format("Building inventory for %s.", sourceDir));
-            inventoryStore = DataStoreFactory.createInventoryStore();
-            processDir(new File(sourceDir));
-            inventoryStore.write();
-            LogUtil.info("FileSystemForensics", String.format("Built inventory for %s.", sourceDir));
             InventorySummary summary = new InventorySummary();
             summary.setInventoryDirName(inventoryStore.getInventoryDir());
             summary.setKeys(inventoryStore.getKeys());
@@ -60,30 +35,21 @@ public class FileSystemAuditor extends GenericAuditor {
         return TYPE;
     }
 
-    @Override
-    public DiffSummary diff(String oldInventoryDir,String newInventoryDir) throws CobraException {
-        InventoryStore oldInventoryStore = DataStoreFactory.loadInventoryStore(oldInventoryDir);
-        InventoryStore newInventoryStore = DataStoreFactory.loadInventoryStore(newInventoryDir);
-        DiffResultsStore resultsStore = DataStoreFactory.createDiffResultsStore();
-        return resultsStore.diff(oldInventoryStore,newInventoryStore);
-    }
 
-
-
-    private void processDir(File file ) {
+    private void processDir(InventoryStore inventoryStore, File file ) {
         LogUtil.info(String.format("Processing directory %s.", file.getPath()));
         File[] contents = file.listFiles();
         if (contents != null) {
             for (int i = 0; i < contents.length; i++) {
-                processFile(contents[i].getAbsolutePath());
+                processFile(inventoryStore,contents[i].getAbsolutePath());
                 if (contents[i].isDirectory()) {
-                    processDir(contents[i]);
+                    processDir(inventoryStore,contents[i]);
                 }
             }
         }
     }
 
-    public void processFile(String filename) {
+    public void processFile(InventoryStore inventoryStore,String filename) {
         try {
             FileInfo fileInfo = new FileInfo(filename);
             fileInfo.setNew();

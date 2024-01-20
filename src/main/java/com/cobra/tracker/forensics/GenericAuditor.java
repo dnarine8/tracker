@@ -5,6 +5,8 @@ import com.cobra.tracker.db.repo.DiffResultsStore;
 import com.cobra.tracker.db.repo.InventoryStore;
 import com.cobra.tracker.util.CobraException;
 
+import java.io.File;
+
 abstract public class GenericAuditor implements Auditor {
 
 
@@ -15,10 +17,22 @@ abstract public class GenericAuditor implements Auditor {
      * @return a summary of the differences.
      * @throws CobraException for any errors
      */
-    protected DiffSummary diffInventory(String oldInventoryDir, String newInventoryDir) throws CobraException {
-        InventoryStore oldInventoryStore = DataStoreFactory.loadInventoryStore(oldInventoryDir);
-        InventoryStore newInventoryStore = DataStoreFactory.loadInventoryStore(newInventoryDir);
-        DiffResultsStore resultsStore = DataStoreFactory.createDiffResultsStore();
+    @Override
+    public DiffSummary diff(String oldInventoryDir,String newInventoryDir,DiffResultsStore resultsStore) throws CobraException {
+
+        InventoryStore oldInventoryStore = loadInventory(oldInventoryDir);
+        InventoryStore newInventoryStore = loadInventory(newInventoryDir);
         return resultsStore.diff(oldInventoryStore,newInventoryStore);
+    }
+
+    private InventoryStore loadInventory(String inventoryDirName) throws CobraException {
+        File f = new File(inventoryDirName);
+        if (!f.exists()){
+            throw new CobraException(String.format("Invalid inventory directory %s. Directory does not exist.",inventoryDirName));
+        }
+        InventoryStore inventoryStore = new InventoryStore(inventoryDirName);
+        inventoryStore.read();
+        return  inventoryStore;
+
     }
 }
