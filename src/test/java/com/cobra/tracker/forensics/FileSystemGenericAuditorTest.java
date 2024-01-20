@@ -16,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 public class FileSystemGenericAuditorTest extends BaseTest {
 
     @Test
-    public void createInventory() throws FileNotFoundException {
+    public void createInventory() throws FileNotFoundException, CobraException {
         String sourceDir = createSourceDir("source");
 
         // add file1.txt, file2.txt

@@ -17,10 +17,11 @@ public class FileSystemAuditor extends GenericAuditor {
     private static final String TYPE = "FILES";
 
     @Override
-    public InventorySummary buildInventory(InventoryStore inventoryStore) throws CobraException{
+    public InventorySummary buildInventory(InventoryStore inventoryStore, String sourceDir){
         try {
             LogUtil.info("FileSystemForensics", String.format("Building inventory for %s.", sourceDir));
-            inventoryStore = DataStoreFactory.createInventoryStore();
+            this.inventoryStore = inventoryStore;
+//            inventoryStore = DataStoreFactory.createInventoryStore();
             processDir(new File(sourceDir));
             inventoryStore.write();
             LogUtil.info("FileSystemForensics", String.format("Built inventory for %s.", sourceDir));

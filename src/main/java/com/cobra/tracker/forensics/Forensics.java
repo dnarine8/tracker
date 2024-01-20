@@ -20,6 +20,17 @@ public class Forensics {
         auditors[0] = new FileSystemAuditor();
     }
 
+    /**
+     * Set the global base directory. Use for unit test cases.
+     * @param baseDir the base directory.
+     */
+    public static void setBaseDir(String baseDir){
+        BASE_DIR = baseDir;
+        INVENTORY_BASE_DIR = BASE_DIR + File.separator + "inventory" + File.separator;
+        RESULTS_BASE_DIR = BASE_DIR + File.separator + "results" + File.separator;
+    }
+
+
     public InventorySummary [] buildInventory(String sourceDir) {
         String baseDir = INVENTORY_BASE_DIR + getTimestamp() + File.separator;
         InventorySummary [] summaries = new InventorySummary[1];
@@ -33,7 +44,7 @@ public class Forensics {
                 File f = new File(inventoryDir);
                 f.mkdirs();
                 InventoryStore inventoryStore =  new InventoryStore(inventoryDir);
-                summaries[i++] = auditor.buildInventory(inventoryStore);
+                summaries[i++] = auditor.buildInventory(inventoryStore,sourceDir);
                 LogUtil.info("FileSystemForensics", String.format("Built inventory %s.", inventoryDir));
             } catch (CobraException e) {
                 // log and keep going for other auditors
