@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #  **************** program arguments *****************
-LOGGING_CONFIG=logging.spatcli.properties
-MAIN_CLASS=com.cobra.pass.app.Main
-CLASSPATH="pass-1.0.jar"
+LOGGING_CONFIG=logging.forensics.properties
+MAIN_CLASS=com.cobra.forensics.app.Main
+CLASSPATH="forensics-1.0.jar"
 VMARGS='-Djava.util.logging.config.file='$LOGGING_CONFIG''
 
 # **************************** main function *******************************

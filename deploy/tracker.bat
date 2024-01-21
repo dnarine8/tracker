@@ -1,8 +1,8 @@
 echo off
 
 REM  **************** program arguments *****************
-set LOGGING_CONFIG=logging.pass.properties
-set MAIN_CLASS=com.cobra.pass.app.Main
+set LOGGING_CONFIG=logging.forensics.properties
+set MAIN_CLASS=com.cobra.forensics.app.Main
 set CLASSPATH=pass-1.0.jar
 set VMARGS=-Djava.util.logging.config.file=%LOGGING_CONFIG%
 
