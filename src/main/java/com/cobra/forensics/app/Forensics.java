@@ -65,17 +65,17 @@ public class Forensics {
         return summaries;
     }
 
-    public DiffSummary[] diff(String oldInventoryDir, String newInventoryDir) {
+    public DiffSummary[] diff(String oldInventoryTimestampDir, String newInventoryTimestampDir) {
         String diffResultsDirName = RESULTS_BASE_DIR + ForensicsUtil.dateToString() + File.separator;
 
-        DiffSummary[] summaries = new DiffSummary[1];
+        DiffSummary[] summaries = new DiffSummary[AUDITORS.length];
         int i = 0;
 
         for (Auditor auditor : AUDITORS) {
             String type = auditor.getType();
             try {
-                oldInventoryDir = buildInventoryPath(oldInventoryDir, type);
-                newInventoryDir = buildInventoryPath(newInventoryDir, type);
+                String oldInventoryDir = buildInventoryPath(oldInventoryTimestampDir, type);
+                String newInventoryDir = buildInventoryPath(newInventoryTimestampDir, type);
                 String resultDir = diffResultsDirName + type + File.separator;
                 File f = new File(resultDir);
                 f.mkdirs();

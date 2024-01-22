@@ -21,6 +21,8 @@ public class ForensicsTest extends BaseTest {
     private String newDir;
     @Before
     public void setup() throws FileNotFoundException, CobraException {
+        deleteSourceDir("source");
+
         sourceDir = createSourceDir("source");
 
         // add file1.txt, file2.txt
@@ -36,8 +38,8 @@ public class ForensicsTest extends BaseTest {
     }
 
     @After
-    public void tearDown() throws FileNotFoundException {
-        delete(new File(sourceDir));
+    public void tearDown() throws  CobraException {
+        deleteSourceDir("source");
     }
 
     @Test
@@ -69,11 +71,11 @@ public class ForensicsTest extends BaseTest {
 
 
     @Test
-    public void diff() throws FileNotFoundException, CobraException {
+    public void diff() throws FileNotFoundException {
         Forensics forensics = new Forensics();
         InventorySummary [] result = forensics.buildInventory(sourceDir);
-        InventorySummary summary = result[0];
-        String inventory1Dir = summary.getTimeStamp();
+//        InventorySummary summary = result[0];
+        String inventory1Dir = getFilesInventoryTimestampDir(result);
 
         // change file2
         createFile(sourceDir + File.separator + "file2.txt", "this is a test");
@@ -86,38 +88,32 @@ public class ForensicsTest extends BaseTest {
 
         Forensics forensics2 = new Forensics();
         result = forensics2.buildInventory(sourceDir);
-        summary = result[0];
-        String inventory2Dir = summary.getTimeStamp();
+     //   summary = result[0];
+        String inventory2Dir = getFilesInventoryTimestampDir(result);
 
         Forensics forensics3 = new Forensics();
         DiffSummary []diffSummaries = forensics.diff(inventory1Dir,inventory2Dir);
         System.out.println("old inventory dir is " + inventory1Dir);
         System.out.println("new inventory dir is " + inventory2Dir);
 
-        System.out.println(diffSummaries[0]);
+        for (DiffSummary summary: diffSummaries) {
+            System.out.println(summary);
+        }
 
     }
-    @Test
-    public void test(){
-        Set<String> set1 = new HashSet<>();
-        Set<String> set2 = new HashSet<>();
-        set1.add("test1");
-        set2.add("test1");
-        assertTrue(set1.equals(set2));
-        Set<String> set3 = null;
-        boolean equals = set1.equals(set3);
-        assertFalse(set1.equals(set3));
-        set2.add("test2");
-        assertFalse(set1.equals(set2));
-        set1.add("test2");
-        assertTrue(set1.equals(set2));
-        set1.add("test3");
-        set2.add("test4");
-        set1.add("test4");
-        set2.add("test3");
-        assertTrue(set1.equals(set2));
 
+    private String getFilesInventoryTimestampDir(InventorySummary [] result) {
 
+        for (InventorySummary summary: result) {
+            String inventoryDir = summary.getInventoryDirName();
+            int startIndex = inventoryDir.lastIndexOf(File.separator, inventoryDir.length() - 2) + 1;
+            String type = inventoryDir.substring(startIndex, inventoryDir.length() - 1);
+            if (type.equals(FileSystemAuditor.TYPE)){
+                return summary.getTimeStamp();
+            }
+        }
+
+        return null;
     }
     private void createFile(String name, String data) throws FileNotFoundException {
         try (PrintWriter out = new PrintWriter(name)) {

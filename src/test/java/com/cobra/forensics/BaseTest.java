@@ -52,6 +52,17 @@ public class BaseTest {
         f.mkdirs();
         return sourceDir;
     }
+    protected void deleteSourceDir(String filename) throws CobraException {
+        String sourceDir = baseDir + filename;
+        File f = new File(sourceDir);
+        if (f.exists()){
+            try {
+                delete(f);
+            } catch (FileNotFoundException e) {
+                throw new CobraException(e.getMessage());
+            }
+        }
+    }
 
     protected void delete(File f) throws  FileNotFoundException {
         if (f.isDirectory()) {

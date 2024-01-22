@@ -69,7 +69,13 @@ public class WindowsGenericForensicData extends  ForensicData{
                 for (String key : keys) {
                     String value = fields.get(key);
                     String otherValue = forensicData.fields.get(key);
-                    if (!value.equals(otherValue)){
+
+                    if (value == null){
+                        if (otherValue != null){
+                            equals = false;
+                            break;
+                        }
+                    } else if (!value.equals(otherValue)){
                         equals = false;
                         break;
                     }
