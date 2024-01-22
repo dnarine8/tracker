@@ -1,5 +1,6 @@
 package com.cobra.forensics.pshell;
 
+import com.cobra.forensics.db.model.ForensicDataItem;
 import com.cobra.forensics.util.CobraException;
 
 import java.io.*;

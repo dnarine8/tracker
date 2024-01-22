@@ -1,4 +1,4 @@
-package com.cobra.forensics.pshell;
+package com.cobra.forensics.db.model;
 
 import com.cobra.forensics.util.CobraException;
 
@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class ForensicDataItem {
+public class ForensicDataItem extends  ForensicData{
     private final static String ERROR_MISMATCH_NAMES_VALUES = "Failed to create forensic data, %d names with %d values.";
     private final static String ERROR_MISSING_NAMES_VALUES = "Failed to create forensic data, missing key, names or values.";
     private final static String MISSING_KEY = "Failed to create forensic data, failed to locate key.";
