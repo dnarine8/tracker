@@ -10,6 +10,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -43,17 +44,27 @@ public class ForensicsTest extends BaseTest {
     public void buildInventory() {
         Forensics forensics = new Forensics();
         InventorySummary [] result = forensics.buildInventory(sourceDir);
-        InventorySummary summary = result[0];
-        String inventoryDir = summary.getInventoryDirName();
-        assertTrue(containBaseDir(inventoryDir));
+        int expectedOfTypes = 4;
+        assertEquals(expectedOfTypes,result.length);
+        Set<String> auditorTypes = new HashSet<>();
+        auditorTypes.add(FileSystemAuditor.TYPE);
+        auditorTypes.add(ProcessAuditor.TYPE);
+        auditorTypes.add(StartupAuditor.TYPE);
+        auditorTypes.add(ServiceAuditor.TYPE);
 
-        Set<String> keys = summary.getKeys();
+        for (InventorySummary summary: result) {
+            String inventoryDir = summary.getInventoryDirName();
+            assertTrue(containBaseDir(inventoryDir));
 
-        assertEquals(keys.size(),5);
+            // verify inventory directory created
+            File f = new File(inventoryDir);
+            assertTrue(f.exists());
 
-        // verify inventory directory created
-        File f = new File(inventoryDir);
-        assertTrue(f.exists());
+            int startIndex = inventoryDir.lastIndexOf(File.separator, inventoryDir.length() - 2) + 1;
+            String type = inventoryDir.substring(startIndex, inventoryDir.length() - 1);
+            auditorTypes.remove(type);
+        }
+        assertEquals(0,auditorTypes.size());
     }
 
 
@@ -86,34 +97,28 @@ public class ForensicsTest extends BaseTest {
         System.out.println(diffSummaries[0]);
 
     }
+    @Test
+    public void test(){
+        Set<String> set1 = new HashSet<>();
+        Set<String> set2 = new HashSet<>();
+        set1.add("test1");
+        set2.add("test1");
+        assertTrue(set1.equals(set2));
+        Set<String> set3 = null;
+        boolean equals = set1.equals(set3);
+        assertFalse(set1.equals(set3));
+        set2.add("test2");
+        assertFalse(set1.equals(set2));
+        set1.add("test2");
+        assertTrue(set1.equals(set2));
+        set1.add("test3");
+        set2.add("test4");
+        set1.add("test4");
+        set2.add("test3");
+        assertTrue(set1.equals(set2));
 
-/*    public void diff() throws CobraException {
-        String sourceDir = "C:\\Users\\dev\\Desktop\\repo\\cobra";
-
-        FileSystemAuditor forensics = new FileSystemAuditor();
-        String inventoryDir = forensics.buildInventory(sourceDir).getInventoryDirName();
-
-        FileSystemAuditor forensics2 = new FileSystemAuditor();
-        String inventoryDir2 = forensics2.buildInventory(sourceDir).getInventoryDirName();
-
-        FileSystemAuditor analyze = new FileSystemAuditor();
-        analyze.diff(extractDirName(inventoryDir),extractDirName(inventoryDir2));
-    }*/
-    private String extractDirName(String inventoryDir){
-        int index = inventoryDir.indexOf("inventory");
-        int startIndex;
-        int endIndex;
-        if (index == inventoryDir.length() - 1){
-            endIndex = index;
-            startIndex = inventoryDir.lastIndexOf(File.separator, endIndex - 1);
-        } else {
-            startIndex = index;
-            endIndex = inventoryDir.length() - 1;
-        }
-        return inventoryDir.substring(++startIndex,endIndex);
 
     }
-
     private void createFile(String name, String data) throws FileNotFoundException {
         try (PrintWriter out = new PrintWriter(name)) {
             out.println(data);

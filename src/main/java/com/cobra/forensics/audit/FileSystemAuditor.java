@@ -10,8 +10,7 @@ import java.io.*;
 import java.util.HashMap;
 
 public class FileSystemAuditor extends GenericAuditor {
-    private final HashMap<String, ForensicData> table = new HashMap<>();
-    private static final String TYPE = "FILES";
+    public static final String TYPE = "FILES";
 
     @Override
     public InventorySummary buildInventory(InventoryStore inventoryStore, String sourceDir) throws CobraException {
@@ -38,10 +37,10 @@ public class FileSystemAuditor extends GenericAuditor {
         LogUtil.info(String.format("Processing directory %s.", file.getPath()));
         File[] contents = file.listFiles();
         if (contents != null) {
-            for (int i = 0; i < contents.length; i++) {
-                processFile(inventoryStore,contents[i].getAbsolutePath());
-                if (contents[i].isDirectory()) {
-                    processDir(inventoryStore,contents[i]);
+            for (File content : contents) {
+                processFile(inventoryStore, content.getAbsolutePath());
+                if (content.isDirectory()) {
+                    processDir(inventoryStore, content);
                 }
             }
         }

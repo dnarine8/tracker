@@ -6,15 +6,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class ForensicDataItem extends  ForensicData{
-    private final static String ERROR_MISMATCH_NAMES_VALUES = "Failed to create forensic data, %d names with %d values.";
+/**
+ * Generic forensic data, where the object is represented by a list of key-value pairs.
+ * This is primarily for output produced by windows powershell commands.
+ */
+public class WindowsGenericForensicData extends  ForensicData{
     private final static String ERROR_MISSING_NAMES_VALUES = "Failed to create forensic data, missing key, names or values.";
-    private final static String MISSING_KEY = "Failed to create forensic data, failed to locate key.";
+    private final static String MISSING_KEY = "Failed to create forensic data, failed to locate key with name %s.";
 
     private final Map<String, String> fields = new HashMap<>();
     private final String keyName;
 
-    public ForensicDataItem(String keyName, String[] names, String[] values) throws CobraException {
+    public WindowsGenericForensicData(String keyName, String[] names, String[] values) throws CobraException {
         this.keyName = keyName;
         boolean foundKey = false;
 
@@ -34,6 +37,7 @@ public class ForensicDataItem extends  ForensicData{
             if (!foundKey) {
                 foundKey = keyName.equals(name);
             }
+            // Specific workaround for windows, value may not be provided if empty
             if (values.length > i) {
                 fields.put(name, values[i]);
             } else {
@@ -42,7 +46,7 @@ public class ForensicDataItem extends  ForensicData{
         }
 
         if (!foundKey) {
-            throw new CobraException(MISSING_KEY);
+            throw new CobraException(String.format(MISSING_KEY,keyName));
         }
 
     }
@@ -57,20 +61,19 @@ public class ForensicDataItem extends  ForensicData{
             return true;
         }
         boolean equals = false;
-        if (obj != null) {
-            ForensicDataItem forensicData = (ForensicDataItem) obj;
+        if (obj instanceof WindowsGenericForensicData) {
+            WindowsGenericForensicData forensicData = (WindowsGenericForensicData) obj;
             if (fields.size() == forensicData.fields.size()) {
+                equals = true;
                 Set<String> keys = fields.keySet();
                 for (String key : keys) {
                     String value = fields.get(key);
                     String otherValue = forensicData.fields.get(key);
-                    if (value != null || otherValue != null) {
-                        if (value == null || !value.equals(otherValue)) {
-                            break;
-                        }
+                    if (!value.equals(otherValue)){
+                        equals = false;
+                        break;
                     }
                 }
-                equals = true;
             }
         }
         return equals;
