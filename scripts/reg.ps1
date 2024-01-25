@@ -1,9 +1,19 @@
-# Launch powershell as adming then run the following command
+# Launch powershell as admin then run the following command
 # Set-ExecutionPolicy RemoteSigned
 # to get authorization for running powershell scripts, then open a new powershell window.
 
 $path = $args[0]
 $output = $args[1]
+$HKlMDIR = $output/HKlM/output.csv
+$HKCUDIR = $output/HKCU/output.csv
+$HKUDIR = $output/HKU.csv
+$HKCCDIR = $output/HKCC.csv
+$HKCRDIR = $output/HKCR.csv
+
+exportRegistry "HKCU" hkcu.csv
+exportRegistry "Registry::HKEY_USERS" hku.csv
+exportRegistry "Registry::HKEY_CURRENT_CONFIG" hkcc.csv
+exportRegistry "Registry::HKEY_CLASSES_ROOT" hkcr.csv
 
 function hello(){
 Write-Host "Hello World!"
@@ -76,15 +86,15 @@ function exportRegistry {
         }
 }
 
-hello
-exportRegistry $path $output
+Write-Host $HKlMDIR
+Write-Host $HKCUDIR
+Write-Host $HKUDIR
+Write-Host $HKCCDIR
+Write-Host $HKCRDIR
 
-#exportRegistry "HKLM:SOFTWARE\Microsoft\Policies" junk.csv 
-
-
-#exportRegistry "HKLM" hkcm.csv 
-#exportRegistry "HKCU" hkcu.csv 
-#exportRegistry "Registry::HKEY_USERS" hku.csv 
-#exportRegistry "Registry::HKEY_CURRENT_CONFIG" hkcc.csv 
-#exportRegistry "Registry::HKEY_CLASSES_ROOT" hkcr.csv 
+#exportRegistry "HKLM" $HKlMDIR
+#exportRegistry "HKCU" $HKCUDIR
+#exportRegistry "Registry::HKEY_USERS" $HKUDIR
+#exportRegistry "Registry::HKEY_CURRENT_CONFIG" $HKCCDIR
+#exportRegistry "Registry::HKEY_CLASSES_ROOT" $HKCRDIR
 
