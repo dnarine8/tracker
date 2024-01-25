@@ -8,5 +8,8 @@ public class ProcessAuditor extends GenericWindowsAuditor {
     public ProcessAuditor() {
         super(TYPE, KEY, CMD);
     }
-
+    @Override
+    public boolean supportInventory(){
+        return true;
+    }
 }

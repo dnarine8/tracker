@@ -8,6 +8,7 @@ import com.cobra.forensics.util.ForensicsUtil;
 import com.cobra.forensics.util.LogUtil;
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class Forensics {
     private static String BASE_DIR = "data";
@@ -19,8 +20,9 @@ public class Forensics {
         AUDITORS = new Auditor[]{new FileSystemAuditor(),
                 new ProcessAuditor(),
                 new ServiceAuditor(),
-                new StartupAuditor()
-               // new TCPAuditor();
+                new StartupAuditor(),
+               // new TCPAuditor()
+                new RegHLMAuditor()
         };
     }
 
@@ -39,30 +41,32 @@ public class Forensics {
     public InventorySummary[] buildInventory(String sourceDir) {
         String timestamp = ForensicsUtil.dateToString();
         String baseDir = INVENTORY_BASE_DIR + timestamp + File.separator;
-        InventorySummary[] summaries = new InventorySummary[AUDITORS.length];
+        ArrayList<InventorySummary> summaries = new ArrayList<>();
         int i = 0;
 
         for (Auditor auditor : AUDITORS) {
-            String type = auditor.getType();
-            try {
-                String inventoryDir = baseDir + type + File.separator;
-                LogUtil.info("FileSystemForensics", String.format("Building inventory for %s.", inventoryDir));
-                File f = new File(inventoryDir);
-                f.mkdirs();
-                InventoryStore inventoryStore = new InventoryStore(inventoryDir);
-                InventorySummary summary = auditor.buildInventory(inventoryStore, sourceDir);
-                summary.setTimeStamp(timestamp);
-                summaries[i++] = summary;
-                LogUtil.info("FileSystemForensics", String.format("Built inventory %s.", inventoryDir));
-            } catch (CobraException e) {
-                // log and keep going for other auditors
-                LogUtil.error(String.format("Failed to build inventory for %s.", type), e);
-            } catch (Exception e) {
-                LogUtil.error(String.format("Unexpected error, while gathering inventory data for %s.", type), e);
+            if (auditor.supportInventory()) {
+                String type = auditor.getType();
+                try {
+                    String inventoryDir = baseDir + type + File.separator;
+                    LogUtil.info("FileSystemForensics", String.format("Building inventory for %s.", inventoryDir));
+                    File f = new File(inventoryDir);
+                    f.mkdirs();
+                    InventoryStore inventoryStore = new InventoryStore(inventoryDir);
+                    InventorySummary summary = auditor.buildInventory(inventoryStore, sourceDir);
+                    summary.setTimeStamp(timestamp);
+                    summaries.add(summary);
+                    LogUtil.info("FileSystemForensics", String.format("Built inventory %s.", inventoryDir));
+                } catch (CobraException e) {
+                    // log and keep going for other auditors
+                    LogUtil.error(String.format("Failed to build inventory for %s.", type), e);
+                } catch (Exception e) {
+                    LogUtil.error(String.format("Unexpected error, while gathering inventory data for %s.", type), e);
+                }
             }
 
         }
-        return summaries;
+        return summaries.toArray(new InventorySummary[summaries.size()]);
     }
 
     public DiffSummary[] diff(String oldInventoryTimestampDir, String newInventoryTimestampDir) {

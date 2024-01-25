@@ -13,6 +13,10 @@ public class FileSystemAuditor extends GenericAuditor {
     public static final String TYPE = "FILES";
 
     @Override
+    public boolean supportInventory(){
+        return true;
+    }
+    @Override
     public InventorySummary buildInventory(InventoryStore inventoryStore, String sourceDir) throws CobraException {
         try {
             processDir(inventoryStore, new File(sourceDir));

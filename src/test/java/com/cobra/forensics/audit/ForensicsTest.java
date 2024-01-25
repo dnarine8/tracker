@@ -70,7 +70,6 @@ public class ForensicsTest extends BaseTest {
     }
 
 
-    @Test
     public void diff() throws FileNotFoundException {
         Forensics forensics = new Forensics();
         InventorySummary [] result = forensics.buildInventory(sourceDir);

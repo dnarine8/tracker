@@ -8,5 +8,8 @@ public class StartupAuditor extends GenericWindowsAuditor {
     public StartupAuditor() {
         super(TYPE, KEY, CMD);
     }
-
+    @Override
+    public boolean supportInventory(){
+        return true;
+    }
 }

@@ -8,6 +8,9 @@ public class ServiceAuditor extends GenericWindowsAuditor {
     public ServiceAuditor() {
         super(TYPE, KEY, CMD);
     }
-
+    @Override
+    public boolean supportInventory(){
+        return true;
+    }
 }
 

@@ -24,6 +24,8 @@ abstract public class GenericAuditor implements Auditor {
         return resultsStore.diff(oldInventoryStore,newInventoryStore);
     }
 
+
+
     private InventoryStore loadInventory(String inventoryDirName) throws CobraException {
         File f = new File(inventoryDirName);
         if (!f.exists()){
