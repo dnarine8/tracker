@@ -38,20 +38,23 @@ function exportRegistry (){
     Write-Host "Done exporting registry entries for $Path"
 }
 
+$timestamp = Get-Date -Format "yyyy_MMM_dd_hhmmttss"
+Write-Host $timestamp
+
+New-Item -Path . -Name $timestamp -ItemType "directory"
+
+exportRegistry "Registry::HKEY_CURRENT_USER" "$timestamp\user.csv" "$timestamp\user_error.txt"
+exportRegistry "Registry::HKEY_USERS" "$timestamp\users.csv" "$timestamp\users_error.txt"
+
+exportRegistry "Registry::HKEY_CLASSES_ROOT" "$timestamp\root.csv" "$timestamp\root_error.txt"
+exportRegistry "Registry::HKEY_CURRENT_CONFIG" "$timestamp\config.csv" "$timestamp\config_error.txt"
+
+exportRegistry "HKLM:HARDWARE" "$timestamp\hardware.csv" "$timestamp\hardware_error.txt"
+exportRegistry "HKLM:SYSTEM" "$timestamp\system.csv" "$timestamp\system_error.txt"
+exportRegistry "HKLM:SAM" "$timestamp\sam.csv" "$timestamp\sam_error.txt"
+exportRegistry "HKLM:SECURITY" "$timestamp\security.csv" "$timestamp\security_error.txt"
+exportRegistry "HKLM:SOFTWARE" "$timestamp\software.csv" "$timestamp\software_error.txt"
+
 
 $timestamp = Get-Date -Format "yyyy_MMM_dd_hhmmttss"
-Write-Host $time
-exportRegistry "Registry::HKEY_CURRENT_USER" "user.csv" "user_error.txt"
-exportRegistry "Registry::HKEY_USERS" "users.csv" "users_error.txt"
-
-exportRegistry "Registry::HKEY_CLASSES_ROOT" "root.csv" "root_error.txt"
-exportRegistry "Registry::HKEY_CURRENT_CONFIG" "config.csv" "config_error.txt"
-
-exportRegistry "HKLM:HARDWARE" "hardware.csv" "hardware_error.txt"
-exportRegistry "HKLM:SYSTEM" "system.csv" "system_error.txt"
-exportRegistry "HKLM:SAM" "sam.csv" "sam_error.txt"
-exportRegistry "HKLM:SECURITY" "security.csv" "security_error.txt"
-exportRegistry "HKLM:SOFTWARE" "software.csv" "software_error.txt"
-
-$timestamp = Get-Date -Format "yyyy_MMM_dd_hhmmttss"
-Write-Host $time
+Write-Host $timestamp

@@ -12,8 +12,10 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.prefs.Preferences;
 
 import static org.junit.Assert.*;
+
 
 public class ForensicsTest extends BaseTest {
 
@@ -120,4 +122,10 @@ public class ForensicsTest extends BaseTest {
         }
     }
 
+    @Test
+    public void prototype(){
+        Preferences preferences = Preferences.systemRoot();
+        System.out.println("test");
+
+    }
 }
