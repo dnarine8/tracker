@@ -4,97 +4,54 @@
 
 $path = $args[0]
 $output = $args[1]
-$HKlMDIR = $output/HKlM/output.csv
-$HKCUDIR = $output/HKCU/output.csv
-$HKUDIR = $output/HKU.csv
-$HKCCDIR = $output/HKCC.csv
-$HKCRDIR = $output/HKCR.csv
 
-exportRegistry "HKCU" hkcu.csv
-exportRegistry "Registry::HKEY_USERS" hku.csv
-exportRegistry "Registry::HKEY_CURRENT_CONFIG" hkcc.csv
-exportRegistry "Registry::HKEY_CLASSES_ROOT" hkcr.csv
 
-function hello(){
-Write-Host "Hello World!"
-Write-Host "path = $path"
-Write-Host "output = $outFile"
-
-}
-
-function exportRegistry {
-    param (
+function exportRegistry (){
+   param (
         [parameter(Mandatory = $true, HelpMessage = "Enter the path to start from, for example HKLM:SOFTWARE\Microsoft\Policies")][string]$Path,
-        [parameter(Mandatory = $true)][string]$Outfile
+        [parameter(Mandatory = $true)][string]$OutputFile,
+        [parameter(Mandatory = $true)][string]$ErrorFile
     )
 
-    Write-Host "Hello World!  $Path $Outfile"
+   Write-Host "Exporting registry for $Path"
+   $keys = Get-ChildItem -Path $Path -Recurse -ErrorAction SilentlyContinue
+   Write-Host "Retrieved all keys"
 
-    #Test if $Path is accessible
-#    if (Test-Path $path -ErrorAction stop) {
-#        Write-Host ("Path {0} is valid, continuing..." -f $Path) -ForegroundColor Green
-#    }
-#    else {
-#        Write-Warning ("Could not access path {0}, check syntax and permissions. Exiting..." -f $path)
-#        return
-#    }
-
-        #Check file extension, if it's not .csv or .xlsx exit
-    if (-not ($Outfile.EndsWith('.csv') -or $Outfile.EndsWith('.xlsx'))) {
-        Write-Warning ("The specified {0} output file should use the .csv or .xlsx extension, exiting..." -f $Outfile)
-        return
-    }
-
-
-    #Set $keys variable
-    Write-Host ("Retrieving keys from {0}" -f $Path) -ForegroundColor Green
-#    $keys = Get-ChildItem -Path $path -Recurse -ErrorAction SilentlyContinue
-    $keys = Get-ChildItem -Path "HKCU:\" -Recurse -ErrorAction SilentlyContinue
-
-    Write-Host $keys
-
-    $total = foreach ($key in $keys) {
-        foreach ($property in $key) {
-            Write-Host ("Processing {0}" -f $property) -ForegroundColor Green
-            foreach ($name in $key.Property) {
-                try {   
-                     [PSCustomObject]@{
-                        Name     = $property.Name + '\'+ $($name)
-                       # Property = "$($name)"
-                        Value    = Get-ItemPropertyValue -Path $key.PSPath -Name $name
-                        Type     = $key.GetValueKind($name)
+    foreach ($key in $keys) {
+        if ($key -like "*Classes*"){
+            Write-Output "Skipping $key" >> error.txt
+        }   
+        else {
+            foreach ($property in $key) {  
+                foreach ($name in $key.Property) {
+                    try {   
+                         $Value = Get-ItemPropertyValue -Path $key.PSPath -Name $name
+                         Write-Output "$key\$name, $Value" >> $OutputFile
                     }
-                     #Write-Host $object
-                
+                    catch {
+                        Write-Output ("Error processing $key $name") >> $ErrorFile 
+                    }
                 }
-                catch {
-                    Write-Warning ("Error processing {0} in {1}" -f $property, $key.name)
-                }
-          }
+            }
         }
     }
-
-    #write to file
-     try {
-            New-Item -Path $Outfile -ItemType File -Force:$true -Confirm:$false -ErrorAction Stop | Out-Null
-            $total | Sort-Object Name, Property | Export-Csv -Path $Outfile -Encoding UTF8 -Delimiter ',' -NoTypeInformation
-            Write-Host ("`nExported results to {0}" -f $Outfile) -ForegroundColor Green
-        }
-        catch {
-            Write-Warning ("`nCould not export results to {0}, check path and permissions" -f $Outfile)
-            return
-        }
+    Write-Host "Done exporting registry entries for $Path"
 }
 
-Write-Host $HKlMDIR
-Write-Host $HKCUDIR
-Write-Host $HKUDIR
-Write-Host $HKCCDIR
-Write-Host $HKCRDIR
 
-#exportRegistry "HKLM" $HKlMDIR
-#exportRegistry "HKCU" $HKCUDIR
-#exportRegistry "Registry::HKEY_USERS" $HKUDIR
-#exportRegistry "Registry::HKEY_CURRENT_CONFIG" $HKCCDIR
-#exportRegistry "Registry::HKEY_CLASSES_ROOT" $HKCRDIR
+$timestamp = Get-Date -Format "yyyy_MMM_dd_hhmmttss"
+Write-Host $time
+exportRegistry "Registry::HKEY_CURRENT_USER" "user.csv" "user_error.txt"
+exportRegistry "Registry::HKEY_USERS" "users.csv" "users_error.txt"
 
+exportRegistry "Registry::HKEY_CLASSES_ROOT" "root.csv" "root_error.txt"
+exportRegistry "Registry::HKEY_CURRENT_CONFIG" "config.csv" "config_error.txt"
+
+exportRegistry "HKLM:HARDWARE" "hardware.csv" "hardware_error.txt"
+exportRegistry "HKLM:SYSTEM" "system.csv" "system_error.txt"
+exportRegistry "HKLM:SAM" "sam.csv" "sam_error.txt"
+exportRegistry "HKLM:SECURITY" "security.csv" "security_error.txt"
+exportRegistry "HKLM:SOFTWARE" "software.csv" "software_error.txt"
+
+$timestamp = Get-Date -Format "yyyy_MMM_dd_hhmmttss"
+Write-Host $time
