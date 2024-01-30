@@ -1,7 +1,7 @@
-package com.cobra.forensics.audit;
+package com.cobra.forensics.app;
 
 import com.cobra.forensics.BaseTest;
-import com.cobra.forensics.app.Forensics;
+import com.cobra.forensics.audit.*;
 import com.cobra.forensics.util.CobraException;
 import org.junit.After;
 import org.junit.Before;
@@ -12,7 +12,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.prefs.Preferences;
 
 import static org.junit.Assert.*;
 
@@ -21,6 +20,7 @@ public class ForensicsTest extends BaseTest {
 
     private String sourceDir;
     private String newDir;
+
     @Before
     public void setup() throws FileNotFoundException, CobraException {
         deleteSourceDir("source");
@@ -33,10 +33,10 @@ public class ForensicsTest extends BaseTest {
 
         // add new dir with file1.txt and file2.txt
         newDir = sourceDir + File.separator + "dir1";
-        (new File(newDir)).mkdir();
+        boolean success = (new File(newDir)).mkdir();
+        assertTrue(success);
         createFile(newDir + File.separator + "dir1file1.txt", "this is a test");
         createFile(newDir + File.separator + "dir1file2.txt", "this is a test test");
-
     }
 
     @After
@@ -47,7 +47,7 @@ public class ForensicsTest extends BaseTest {
     @Test
     public void buildInventory() {
         Forensics forensics = new Forensics();
-        InventorySummary [] result = forensics.buildInventory(sourceDir);
+        InventorySummary[] result = forensics.buildInventory(sourceDir);
         int expectedOfTypes = 4;
         assertEquals(expectedOfTypes,result.length);
         Set<String> auditorTypes = new HashSet<>();
@@ -72,10 +72,10 @@ public class ForensicsTest extends BaseTest {
     }
 
 
+    @Test
     public void diff() throws FileNotFoundException {
         Forensics forensics = new Forensics();
         InventorySummary [] result = forensics.buildInventory(sourceDir);
-//        InventorySummary summary = result[0];
         String inventory1Dir = getFilesInventoryTimestampDir(result);
 
         // change file2
@@ -85,11 +85,12 @@ public class ForensicsTest extends BaseTest {
         createFile(newDir + File.separator + "dir1file3.txt", "this is a test test");
 
         // delete file1 from dir1
-        (new File(newDir + File.separator + "dir1file1.txt")).delete();
+        boolean success = (new File(newDir + File.separator + "dir1file1.txt")).delete();
+        assertTrue(success);
+
 
         Forensics forensics2 = new Forensics();
         result = forensics2.buildInventory(sourceDir);
-     //   summary = result[0];
         String inventory2Dir = getFilesInventoryTimestampDir(result);
 
         Forensics forensics3 = new Forensics();
@@ -104,17 +105,7 @@ public class ForensicsTest extends BaseTest {
     }
 
     private String getFilesInventoryTimestampDir(InventorySummary [] result) {
-
-        for (InventorySummary summary: result) {
-            String inventoryDir = summary.getInventoryDirName();
-            int startIndex = inventoryDir.lastIndexOf(File.separator, inventoryDir.length() - 2) + 1;
-            String type = inventoryDir.substring(startIndex, inventoryDir.length() - 1);
-            if (type.equals(FileSystemAuditor.TYPE)){
-                return summary.getTimeStamp();
-            }
-        }
-
-        return null;
+        return result[0].getTimeStamp();
     }
     private void createFile(String name, String data) throws FileNotFoundException {
         try (PrintWriter out = new PrintWriter(name)) {
@@ -122,10 +113,4 @@ public class ForensicsTest extends BaseTest {
         }
     }
 
-    @Test
-    public void prototype(){
-        Preferences preferences = Preferences.systemRoot();
-        System.out.println("test");
-
-    }
 }

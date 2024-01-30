@@ -21,6 +21,6 @@ echo classpath=%CLASSPATH%
 echo vmargs=%VMARGS%
 echo java=%JAVA%
 
-%JAVA% %VMARGS% -cp %CLASSPATH% %MAIN_CLASS% inv scripts
+%JAVA% %VMARGS% -cp %CLASSPATH% %MAIN_CLASS% inv scripts $1
 
 :EOF

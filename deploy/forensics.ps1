@@ -19,7 +19,7 @@ function displayUsage()
 {
     Write-Host "forensics -inv <source dir>"
     Write-Host "forensics -comp <dir1> <dir2>"
-    Write-Host "forensics -reg"
+    Write-Host "forensics -reg <HKCU|HKU|HKCR|HKCC"
 
 }
 
@@ -27,22 +27,41 @@ function exportRegistry(){
     param (
         [parameter(Mandatory = $true, HelpMessage = "Missing base output dir.")][string]$OutputDir
     )
-    $FullPath = "$BaseInventoryDir/$OutputDir"
-    New-Item -Path . -Name $FullPath -ItemType "directory" -Force
-    Write-Host "Exporting registry entries to $FullPath  ..."
+#    $FullPath = "$BaseInventoryDir/$OutputDir"
+#    New-Item -Path . -Name $FullPath -ItemType "directory" -Force
+    Write-Host "Exporting registry entries to $OutputDir  ..."
 
-    exportHive "Registry::HKEY_CURRENT_USER" $FullPath "HKCU"
-    exportHive "Registry::HKEY_USERS" $FullPath "HKU"
-    exportHive "Registry::HKEY_CLASSES_ROOT" $FullPath "HKCR"
-    exportHive "Registry::HKEY_CURRENT_CONFIG" $FullPath "HKCC"
+    exportHive "Registry::HKEY_CURRENT_USER" $OutputDir "HKCU"
+#    exportHive "Registry::HKEY_USERS" $OutputDir "HKU"
+    exportHive "Registry::HKEY_CLASSES_ROOT" $OutputDir "HKCR"
+    exportHive "Registry::HKEY_CURRENT_CONFIG" $OutputDir "HKCC"
 
-    exportHive "HKLM:HARDWARE" $FullPath "HKLMHW"
-    exportHive "HKLM:SYSTEM" $FullPath "HKLMSYS"
-    exportHive "HKLM:SAM" $FullPath "HKCSAM"
-    exportHive "HKLM:SECURITY" $FullPath "HKLMSEC"
-    exportHive "HKLM:SOFTWARE" $FullPath "HKLMSW"
+    exportHive "HKLM:HARDWARE" $OutputDir "HKLMHW"
+    exportHive "HKLM:SYSTEM" $OutputDir "HKLMSYS"
+    exportHive "HKLM:SAM" $OutputDir "HKCSAM"
+    exportHive "HKLM:SECURITY" $OutputDir "HKLMSEC"
+    exportHive "HKLM:SOFTWARE" $OutputDir "HKLMSW"
 
     Write-Host "Done exporting registry entries"
+}
+
+function exportOneHive(){
+    param (
+        [parameter(Mandatory = $true)][string]$OutputDir,
+        [parameter(Mandatory = $true)][string]$Type
+    )
+    if ($Type -eq "HKCU"){
+        exportHive "Registry::HKEY_CURRENT_USER" $OutputDir "HKCU"
+    }
+    elseif ($Type -eq "HKU"){
+        exportHive "Registry::HKEY_USERS" $OutputDir "HKU"
+    }
+    elseif ($Type -eq "HKU"){
+        exportHive "Registry::HKEY_CLASSES_ROOT" $OutputDir "HKCR"
+    }
+    elseif ($Type -eq "HKU"){
+        exportHive "Registry::HKEY_CURRENT_CONFIG" $OutputDir "HKCC"
+    }
 }
 
 function exportHive (){
@@ -85,17 +104,18 @@ function exportHive (){
 
 function buildInventory(){
     param (
-        [parameter(Mandatory = $true, HelpMessage = "Enter the source directory.")][string]$SourceDir
+        [parameter(Mandatory = $true, HelpMessage = "Enter the source directory.")][string]$SourceDir,
+        [parameter(Mandatory = $true, HelpMessage = "Enter the source directory.")][string]$OutputDir
     )
 
-    Write-Host "Creating inventories..."
+    Write-Host "Creating inventories for $SourceDir, outputdir is $OutputDir ..."
     if($null -ne  $JAVA_HOME_DIR)
     {
         $JAVA="$JAVA_HOME_DIR\bin\java"
-        $JAVA_CMD =  "$JAVA $VMARGS -cp $CLASSPATH $MAIN_CLASS inv scripts"
+        $JAVA_CMD =  "$JAVA $VMARGS -cp $CLASSPATH $MAIN_CLASS inv scripts $OutputDir"
         Write-Host $JAVA_CMD
      #   $JAVA_CMD
-        Start-Process -FilePath $JAVA -ArgumentList "$VMARGS -cp $CLASSPATH $MAIN_CLASS inv scripts"
+        Start-Process -FilePath $JAVA -Wait -NoNewWindow -ArgumentList "$VMARGS -cp $CLASSPATH $MAIN_CLASS inv $SourceDir $OutputDir"
     }
 
     Write-Host "Done Creating inventories"
@@ -123,21 +143,34 @@ if ( $Count -ge 1 )
 {
     $BaseDirName = Get-Date -Format "yyyy_MMM_dd_hhmmttss"
     $Command = $args[0]
-    if ($Command -eq "-reg")
-    {
-        exportRegistry $BaseDirName
-    }
-    elseif ($Command -eq "-inv")
+    if ($Command -eq "-inv")
     {
         if ($Count -eq 2)
         {
-            buildInventory $args[1]
+            $OutputDir = "$BaseInventoryDir/$BaseDirName"
+            New-Item -Path . -Name $OutputDir -ItemType "directory" -Force
+            buildInventory $args[1] $OutputDir
+            exportRegistry $OutputDir
         }
         else {
             Write-Host "Invalid number of arguments for inventory command"
             displayUsage
         }
     }
+    elseif ($Command -eq "-reg")
+    {
+        if ($Count -eq 2)
+        {
+            $OutputDir = "$BaseInventoryDir/$BaseDirName"
+            New-Item -Path . -Name $OutputDir -ItemType "directory" -Force
+            exportOneHive $OutputDir $args[1]
+        }
+        else {
+            Write-Host "Invalid number of arguments for inventory command"
+            displayUsage
+        }
+    }
+
     elseif ($Command -eq "-comp")
     {
         if ($Count -eq 3)
@@ -154,7 +187,6 @@ if ( $Count -ge 1 )
         Write-Host "Invalid command $Command."
         displayUsage
     }
-
 }
 else
 {

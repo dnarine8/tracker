@@ -11,18 +11,19 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class Forensics {
-    private static String BASE_DIR = "data";
-    private static String INVENTORY_BASE_DIR = BASE_DIR + File.separator + "inventory" + File.separator;
-    private static String RESULTS_BASE_DIR = BASE_DIR + File.separator + "results" + File.separator;
+    public static  String BASE_DIR = "data";
+    public static  String INVENTORY_BASE_DIR = BASE_DIR + File.separator + "inventory" + File.separator;
+    private static  String RESULTS_BASE_DIR = BASE_DIR + File.separator + "results" + File.separator;
     public static Auditor[] AUDITORS;
+    public static final String TAG = "Forensics";
 
     static {
         AUDITORS = new Auditor[]{new FileSystemAuditor(),
                 new ProcessAuditor(),
                 new ServiceAuditor(),
-                new StartupAuditor(),
+                new StartupAuditor()
                // new TCPAuditor()
-                new RegHLMAuditor()
+        //        new RegHLMAuditor()
         };
     }
 
@@ -36,25 +37,35 @@ public class Forensics {
         INVENTORY_BASE_DIR = BASE_DIR + File.separator + "inventory" + File.separator;
         RESULTS_BASE_DIR = BASE_DIR + File.separator + "results" + File.separator;
     }
-
-
-    public InventorySummary[] buildInventory(String sourceDir) {
+    protected InventorySummary[] buildInventory(String sourceDir) {
         String timestamp = ForensicsUtil.dateToString();
-        String baseDir = INVENTORY_BASE_DIR + timestamp + File.separator;
+        String outputDir = INVENTORY_BASE_DIR + timestamp;
+        return buildInventory(sourceDir, outputDir);
+    }
+
+
+    public InventorySummary[] buildInventory(String sourceDir, String outputDir) {
         ArrayList<InventorySummary> summaries = new ArrayList<>();
         int i = 0;
+
+        int index = outputDir.lastIndexOf(File.separator);
+        String timestamp = outputDir.substring(++index);
 
         for (Auditor auditor : AUDITORS) {
             if (auditor.supportInventory()) {
                 String type = auditor.getType();
                 try {
-                    String inventoryDir = baseDir + type + File.separator;
-                    LogUtil.info("FileSystemForensics", String.format("Building inventory for %s.", inventoryDir));
+                    String inventoryDir = outputDir + File.separator + type + File.separator;
+                    LogUtil.info(TAG, String.format("Building inventory for %s.", inventoryDir));
                     File f = new File(inventoryDir);
-                    f.mkdirs();
+                    boolean success = f.mkdirs();
+                    if (!success){
+                        throw new CobraException("Failed to create inventory directories.");
+                    }
                     InventoryStore inventoryStore = new InventoryStore(inventoryDir);
                     InventorySummary summary = auditor.buildInventory(inventoryStore, sourceDir);
                     summary.setTimeStamp(timestamp);
+                    summary.setInventoryDirName(inventoryDir);
                     summaries.add(summary);
                     LogUtil.info("FileSystemForensics", String.format("Built inventory %s.", inventoryDir));
                 } catch (CobraException e) {
@@ -66,7 +77,7 @@ public class Forensics {
             }
 
         }
-        return summaries.toArray(new InventorySummary[summaries.size()]);
+        return summaries.toArray(new InventorySummary[0]);
     }
 
     public DiffSummary[] diff(String oldInventoryTimestampDir, String newInventoryTimestampDir) {
@@ -82,14 +93,17 @@ public class Forensics {
                 String newInventoryDir = buildInventoryPath(newInventoryTimestampDir, type);
                 String resultDir = diffResultsDirName + type + File.separator;
                 File f = new File(resultDir);
-                f.mkdirs();
+                boolean success = f.mkdirs();
+                if (!success){
+                    throw new CobraException("Failed to create inventory directories.");
+                }
                 DiffResultsStore diffResultsStore = new DiffResultsStore(resultDir);
                 LogUtil.info("Forensics", String.format("Comparing %s with %s. Result is in %s.", oldInventoryDir, newInventoryDir, resultDir));
                 summaries[i++] = auditor.diff(oldInventoryDir, newInventoryDir, diffResultsStore);
                 LogUtil.info("Forensics", String.format("Done comparing %s with %s. Result is in %s.", oldInventoryDir, newInventoryDir, resultDir));
             } catch (CobraException e) {
                 // log and keep going for other auditors
-                LogUtil.error(String.format("Failed to build result for %s.", type), e);
+                LogUtil.error(String.format("Failed to compare %s inventories.", type), e);
             } catch (Exception e) {
                 LogUtil.error(String.format("Unexpected error, while comparing inventory data for %s.", type), e);
             }
