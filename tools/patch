@@ -1,6 +1,7 @@
 #!/bin/bash
 MYAPPS=$HOME/desktop/myapps
-DEST=${MYAPPS}/forensic-1.0
+DEST=${MYAPPS}/forensics-1.0
 echo $DEST
-cp ../target/forensic-1.0.jar $DEST
+cp ../target/forensics-1.0.jar $DEST
+cp ../deploy/forensics.ps1 $DEST
 

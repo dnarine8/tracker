@@ -128,6 +128,14 @@ function compareDirs(){
     )
 
     Write-Host "Comparing dirctories $FirstDir and $SecondDir..."
+    Write-Host "Creating inventories for $SourceDir, outputdir is $OutputDir ..."
+    if($null -ne  $JAVA_HOME_DIR)
+    {
+        $JAVA="$JAVA_HOME_DIR\bin\java"
+        $JAVA_CMD =  "$JAVA $VMARGS -cp $CLASSPATH $MAIN_CLASS cmp $FirstDir $SecondDir"
+        Write-Host $JAVA_CMD
+        Start-Process -FilePath $JAVA -Wait -NoNewWindow -ArgumentList "$VMARGS -cp $CLASSPATH $MAIN_CLASS cmp $FirstDir $SecondDir"
+    }
 
     Write-Host "Done omparing dirctories"
 }
@@ -171,7 +179,7 @@ if ( $Count -ge 1 )
         }
     }
 
-    elseif ($Command -eq "-comp")
+    elseif ($Command -eq "-cmp")
     {
         if ($Count -eq 3)
         {
